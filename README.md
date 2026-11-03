@@ -49,7 +49,11 @@ Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
 
 `.github/workflows/image.yml` construye la imagen y la publica en GHCR cuando se
 empuja un tag `v*`, o a mano desde Actions. Queda en
-`ghcr.io/<usuario>/<repo>:<tag>`.
+`ghcr.io/centro-mundo-x/sc-dashboard:<tag>`.
+
+El workflow toma el nombre de `${{ github.repository }}`, que es
+`Centro-Mundo-X/sc-dashboard`. GHCR pasa el nombre a minúsculas, así que la ruta
+real lleva `centro-mundo-x`.
 
 La imagen corre con `NODE_ENV=production`, que marca la cookie de sesión como
 `Secure`. **El dashboard solo inicia sesión por HTTPS**: hay que servirlo detrás de
