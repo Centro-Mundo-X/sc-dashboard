@@ -45,6 +45,21 @@ no se interpretan automáticamente como aciertos ni errores. El motor respeta es
 El punto 5 importa: un indicador sin datos no es un indicador fallido. Confundirlos sesga el
 análisis.
 
+## 3.1 Lo que el backend no juzga
+
+El backend registra y calcula. **No decide si un valor es bueno o malo.**
+
+Un `false` en `cuff_matches` es un déficit. Un `false` en `corrected_before_confirm` es lo
+correcto: el participante no necesitó corregir. Un `0` en `improper_final_communications` es
+lo deseable, mientras que un `0` en `checks_completed_ratio` es un déficit.
+
+El motor devuelve el valor y nada más. El dashboard no colorea por bueno o malo; solo marca
+lo que no se pudo evaluar.
+
+Para colorear haría falta declarar la polaridad de cada métrica (`positive`, `negative`,
+`neutral`), y eso es una decisión clínica sobre qué conducta se considera deseable. Queda
+pendiente de definir con la psicóloga. Hasta entonces, el color no opina.
+
 ## 4. Indicadores
 
 Cada indicador agrupa los eventos de un `procedure`.

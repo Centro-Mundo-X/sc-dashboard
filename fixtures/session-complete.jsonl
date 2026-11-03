@@ -40,6 +40,6 @@
 {"type":"event","event_id":39,"occurred_at":"2026-11-04T14:41:05.100Z","scene":"results_delivery","procedure":"explanation","action":"verbal_response","object":null,"value":"phrase_selection","outcome":"completed","context":{"phrase_id":3}}
 {"type":"event","event_id":40,"occurred_at":"2026-11-04T14:41:18.300Z","scene":"results_delivery","procedure":"comprehension","action":"comprehension_asked","object":"patient","value":null,"outcome":"completed","context":{"misunderstanding_detected":true}}
 {"type":"event","event_id":41,"occurred_at":"2026-11-04T14:41:28.900Z","scene":"results_delivery","procedure":"comprehension","action":"clarification_requested","object":null,"value":"confirmed_again","outcome":"completed","context":null}
-{"type":"event","event_id":42,"occurred_at":"2026-11-04T14:41:35.900Z","scene":"results_delivery","procedure":"none","action":"consultation_closed","object":null,"value":null,"outcome":"completed","context":null}
+{"type":"event","event_id":42,"occurred_at":"2026-11-04T14:41:35.900Z","scene":"results_delivery","procedure":"none","action":"scene_ended","object":null,"value":null,"outcome":"completed","context":{"closed_via":"consultation_closed"}}
 {"type":"event","event_id":43,"occurred_at":"2026-11-04T14:41:39.000Z","scene":"outside","procedure":"none","action":"session_finished","object":null,"value":null,"outcome":"completed","context":null}
 {"type":"close","finished_at":"2026-11-04T14:41:40.112Z","duration_ms":570112,"scenes_completed":["vital_signs","x_ray","results_delivery"],"total_events":43}

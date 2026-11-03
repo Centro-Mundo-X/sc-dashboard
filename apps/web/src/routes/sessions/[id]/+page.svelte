@@ -7,13 +7,39 @@
 
   type MetricRow = (typeof data.metrics)[number];
 
-  /** Failed checks are the only thing that gets colour. */
-  function failed(metric: MetricRow): boolean {
-    if (metric.valueType === 'boolean') return metric.valueBool === false;
-    if (metric.valueType === 'ratio') return (metric.valueNumber ?? 0) < 1;
-    return false;
-  }
+  /**
+   * Duration per scene, from the session's own timestamps. A scene with no
+   * `scene_ended` event is still running or was interrupted, and reports null
+   * rather than a misleading zero.
+   */
+  const sceneDurations = $derived.by(() => {
+    const durations = new Map<string, number | null>();
 
+    for (const scene of ['vital_signs', 'x_ray', 'results_delivery'] as const) {
+      const own = data.events.filter((e) => e.scene === scene);
+      const started = own.find((e) => e.action === 'scene_started');
+      const ended = own.findLast((e) => e.action === 'scene_ended');
+
+      if (!started) continue;
+      if (!ended) {
+        durations.set(scene, null);
+        continue;
+      }
+      durations.set(scene, Date.parse(ended.occurredAt) - Date.parse(started.occurredAt));
+    }
+
+    return durations;
+  });
+
+  /** "4m 12s", or "en curso" when the scene did not close. */
+  function duration(ms: number | null | undefined): string {
+    if (ms === null) return 'en curso';
+    if (ms === undefined) return '';
+    const total = Math.round(ms / 1000);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return m > 0 ? `${m}m ${s}s` : `${s}s`;
+  }
   let reason = $state('');
   let saving = $state(false);
   let saved = $state(false);
@@ -61,7 +87,7 @@
         /** Indicators in this scene where every metric has a real value. */
         evaluated: indicators.filter(([, ms]) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
         total: indicators.length,
-        failedMetrics: all.filter(failed).length,
+        notEvaluable: all.filter((m) => m.valueType === 'not_evaluable').length,
       };
     });
   });
@@ -179,14 +205,17 @@
         <div class="mb-1 flex items-baseline gap-2 border-b border-(--hairline) pb-1">
           <h3 class="text-[0.8125rem] font-semibold">{labels.scene[scene.scene]}</h3>
           <span class="text-faint text-[0.75rem]">{labels.sceneDescription[scene.scene]}</span>
+          <span class="text-soft ml-1 font-mono text-[0.6875rem]">
+            {duration(sceneDurations.get(scene.scene))}
+          </span>
           <span class="ml-auto font-mono text-[0.6875rem]">
             <span class={scene.evaluated === scene.total ? 'text-signal-ok' : 'text-(--text)'}>
               {scene.evaluated}/{scene.total}
             </span>
-            {#if scene.failedMetrics > 0}
-              <span class="text-signal-danger">
-                · {scene.failedMetrics}
-                {scene.failedMetrics === 1 ? 'métrica con fallo' : 'métricas con fallo'}
+            {#if scene.notEvaluable > 0}
+              <span class="text-soft">
+                · {scene.notEvaluable}
+                {scene.notEvaluable === 1 ? 'sin evaluar' : 'sin evaluar'}
               </span>
             {/if}
           </span>
@@ -202,8 +231,9 @@
                 <div class="flex min-w-0 items-baseline justify-between gap-4">
                   <dt class="text-soft min-w-0 truncate text-[0.75rem]">{metricLabel(metric.metric)}</dt>
                   <dd
-                    class="text-right font-mono text-[0.75rem] font-medium {failed(metric)
-                      ? 'text-signal-danger'
+                    class="text-right font-mono text-[0.75rem] font-medium {metric.valueType ===
+                    'not_evaluable'
+                      ? 'text-faint'
                       : 'text-(--text)'}"
                     title={metric.notEvaluableReason ?? ''}
                   >
