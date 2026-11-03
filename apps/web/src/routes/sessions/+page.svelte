@@ -19,114 +19,127 @@
 
 <svelte:head><title>{labels.sessions.title}</title></svelte:head>
 
-<h1>{labels.sessions.title}</h1>
+<div class="mb-6 flex items-end justify-between gap-4">
+  <div>
+    <h1 class="text-xl font-semibold tracking-tight">{labels.sessions.title}</h1>
+    <p class="text-soft mt-0.5 text-[0.8rem]">
+      {data.sessions.length}
+      {data.sessions.length === 1 ? 'sesión' : 'sesiones'}
+    </p>
+  </div>
+</div>
 
-<form method="GET" class="filters">
-  <label>
-    {labels.sessions.filterParticipant}
-    <input name="participant" value={data.filter.participant} placeholder="P01" />
+<form method="GET" class="mb-5 flex flex-wrap items-end gap-3">
+  <label class="grid gap-1.5">
+    <span class="text-soft text-[0.7rem] font-medium tracking-wide uppercase">
+      {labels.sessions.filterParticipant}
+    </span>
+    <input
+      name="participant"
+      value={data.filter.participant}
+      placeholder="P01"
+      class="w-36 rounded-lg border border-(--hairline) bg-(--panel) px-3 py-2 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+    />
   </label>
-  <label>
-    {labels.sessions.filterStatus}
-    <select name="status" value={data.filter.status}>
+
+  <label class="grid gap-1.5">
+    <span class="text-soft text-[0.7rem] font-medium tracking-wide uppercase">
+      {labels.sessions.filterStatus}
+    </span>
+    <select
+      name="status"
+      value={data.filter.status}
+      class="w-40 rounded-lg border border-(--hairline) bg-(--panel) px-3 py-2 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+    >
       <option value="">{labels.sessions.all}</option>
       <option value="complete">{labels.status.complete}</option>
       <option value="incomplete">{labels.status.incomplete}</option>
     </select>
   </label>
-  <button type="submit">Filtrar</button>
+
+  <button
+    type="submit"
+    class="rounded-lg border border-(--hairline) bg-(--panel) px-4 py-2 text-sm font-medium transition hover:bg-(--hover)"
+  >
+    Filtrar
+  </button>
 </form>
 
 {#if data.sessions.length === 0}
-  <p class="empty">{labels.sessions.empty}</p>
+  <div class="panel grid place-items-center px-6 py-16 text-center">
+    <p class="text-soft text-sm">{labels.sessions.empty}</p>
+  </div>
 {:else}
-  <table>
-    <thead>
-      <tr>
-        <th>{labels.sessions.participant}</th>
-        <th>{labels.sessions.phase}</th>
-        <th>{labels.sessions.case}</th>
-        <th>{labels.sessions.status}</th>
-        <th>{labels.sessions.started}</th>
-        <th>{labels.sessions.duration}</th>
-        <th>{labels.sessions.events}</th>
-        <th>{labels.sessions.invalidEvents}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data.sessions as session (session.id)}
-        <tr>
-          <td><a href="/sessions/{session.id}">{session.participantCode}</a></td>
-          <td>{labels.phase[session.phase as keyof typeof labels.phase] ?? session.phase}</td>
-          <td>{session.caseId}</td>
-          <td>
-            <span class="badge {session.status}">
-              {labels.status[session.status as keyof typeof labels.status] ?? session.status}
-            </span>
-          </td>
-          <td>{formatDate(session.startedAt)}</td>
-          <td>{formatDuration(session.durationMs)}</td>
-          <td>{session.eventCount}</td>
-          <td>{session.invalidEventCount}</td>
+  <div class="panel overflow-hidden">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-(--hairline) bg-(--surface)">
+          <th class="px-4 py-2.5 text-left text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.participant}
+          </th>
+          <th class="px-4 py-2.5 text-left text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.phase}
+          </th>
+          <th class="px-4 py-2.5 text-left text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.case}
+          </th>
+          <th class="px-4 py-2.5 text-left text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.status}
+          </th>
+          <th class="px-4 py-2.5 text-left text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.started}
+          </th>
+          <th class="px-4 py-2.5 text-right text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.duration}
+          </th>
+          <th class="px-4 py-2.5 text-right text-[0.7rem] font-semibold tracking-wide text-(--text-soft) uppercase">
+            {labels.sessions.events}
+          </th>
         </tr>
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each data.sessions as session (session.id)}
+          <tr class="border-b border-(--hairline) transition last:border-0 hover:bg-(--hover)">
+            <td class="px-4 py-3">
+              <a
+                href="/sessions/{session.id}"
+                class="font-mono text-[0.85rem] font-medium text-accent-600 hover:underline dark:text-accent-500"
+              >
+                {session.participantCode}
+              </a>
+            </td>
+            <td class="px-4 py-3 text-(--text-soft)">
+              {labels.phase[session.phase as keyof typeof labels.phase] ?? session.phase}
+            </td>
+            <td class="px-4 py-3 font-mono text-[0.78rem] text-(--text-soft)">{session.caseId}</td>
+            <td class="px-4 py-3">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[0.72rem] font-medium {session.status ===
+                'complete'
+                  ? 'bg-signal-ok/10 text-signal-ok'
+                  : 'bg-signal-warn/15 text-signal-warn'}"
+              >
+                <span
+                  class="size-1.5 rounded-full {session.status === 'complete'
+                    ? 'bg-signal-ok'
+                    : 'bg-signal-warn'}"
+                ></span>
+                {labels.status[session.status as keyof typeof labels.status] ?? session.status}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-(--text-soft)">{formatDate(session.startedAt)}</td>
+            <td class="px-4 py-3 text-right text-(--text-soft)">{formatDuration(session.durationMs)}</td>
+            <td class="px-4 py-3 text-right">
+              {session.eventCount}
+              {#if session.invalidEventCount > 0}
+                <span class="ml-1 text-[0.7rem] text-signal-warn" title={labels.sessions.invalidEvents}>
+                  +{session.invalidEventCount}
+                </span>
+              {/if}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 {/if}
-
-<style>
-  h1 {
-    font-size: 1.25rem;
-    margin: 0 0 1.25rem;
-  }
-  .filters {
-    display: flex;
-    gap: 0.9rem;
-    align-items: end;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .filters label {
-    display: grid;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-  .filters input,
-  .filters select {
-    padding: 0.45rem 0.55rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font: inherit;
-    background: transparent;
-    color: inherit;
-    min-width: 11rem;
-  }
-  .filters button {
-    padding: 0.5rem 0.9rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-  }
-  .badge {
-    display: inline-block;
-    padding: 0.1rem 0.45rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    border: 1px solid var(--border);
-  }
-  .badge.complete {
-    color: #1a7f37;
-    border-color: #1a7f3755;
-  }
-  .badge.incomplete {
-    color: #b45309;
-    border-color: #b4530955;
-  }
-  .empty {
-    color: var(--muted);
-  }
-</style>

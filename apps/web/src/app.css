@@ -1,0 +1,90 @@
+@import 'tailwindcss';
+
+/*
+ * Palette: clinical but calm. Slate neutrals, a single teal accent for
+ * interactive and positive states, amber for the provisional-config warning.
+ */
+@theme {
+  --color-ink-50: oklch(0.98 0.003 250);
+  --color-ink-100: oklch(0.96 0.005 250);
+  --color-ink-200: oklch(0.92 0.007 250);
+  --color-ink-300: oklch(0.86 0.009 250);
+  --color-ink-400: oklch(0.68 0.012 250);
+  --color-ink-500: oklch(0.55 0.014 250);
+  --color-ink-600: oklch(0.45 0.016 250);
+  --color-ink-700: oklch(0.37 0.018 250);
+  --color-ink-800: oklch(0.28 0.018 250);
+  --color-ink-900: oklch(0.21 0.017 250);
+  --color-ink-950: oklch(0.15 0.015 250);
+
+  --color-accent-50: oklch(0.97 0.02 180);
+  --color-accent-100: oklch(0.94 0.04 180);
+  --color-accent-200: oklch(0.88 0.07 180);
+  --color-accent-500: oklch(0.62 0.11 180);
+  --color-accent-600: oklch(0.53 0.10 180);
+  --color-accent-700: oklch(0.44 0.09 180);
+
+  --color-signal-ok: oklch(0.58 0.13 155);
+  --color-signal-warn: oklch(0.72 0.14 75);
+  --color-signal-warn-bg: oklch(0.97 0.04 85);
+  --color-signal-danger: oklch(0.58 0.17 25);
+
+  --font-sans: 'Inter var', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+/* Surfaces switch together so every component inherits one definition. */
+@layer base {
+  :root {
+    --surface: var(--color-ink-50);
+    --panel: white;
+    --text: var(--color-ink-900);
+    --text-soft: var(--color-ink-500);
+    --hairline: var(--color-ink-200);
+    --hover: var(--color-ink-100);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: var(--color-ink-950);
+      --panel: var(--color-ink-900);
+      --text: var(--color-ink-100);
+      --text-soft: var(--color-ink-400);
+      --hairline: var(--color-ink-800);
+      --hover: var(--color-ink-800);
+    }
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numbers in tables must align without per-cell font tweaks. */
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+  }
+}
+
+@utility panel {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 0.75rem;
+}
+
+@utility text-soft {
+  color: var(--text-soft);
+}

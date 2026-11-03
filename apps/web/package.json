@@ -20,7 +20,9 @@
     "vite": "^8.3.0",
     "@sveltejs/adapter-node": "^5.2.12",
     "@types/node": "^22.10.2",
-    "@typescript/native": "npm:typescript@^7.0.2"
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "tailwindcss": "^4.3.4",
+    "@tailwindcss/vite": "^4.3.4"
   },
   "imports": {
     "#lib": "./src/lib/index.js",
