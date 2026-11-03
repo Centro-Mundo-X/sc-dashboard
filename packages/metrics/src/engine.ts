@@ -1,12 +1,12 @@
 import type { Session, SessionEvent } from '@sc/shared';
-import { bloodPressure, breathing, pulse, vitalsIntegration } from './indicators-vitals.ts';
+import { bloodPressure, breathing, pulse, vitalsIntegration } from './indicators/vitals.ts';
 import {
   acquisitionActivation,
   identityVerification,
   imageReview,
   patientPreparation,
-} from './indicators-xray.ts';
-import { comprehension, correspondence, explanation, inconclusive, textValidation } from './indicators-results.ts';
+} from './indicators/x-ray.ts';
+import { comprehension, correspondence, explanation, inconclusive, textValidation } from './indicators/results.ts';
 import {
   eventsForProcedure,
   type ComputedMetric,

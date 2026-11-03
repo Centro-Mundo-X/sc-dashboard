@@ -39,7 +39,7 @@ curl -X POST localhost:3000/api/sessions/ingest \
 ```bash
 printf 'DEVICE_TOKEN=dev\nSESSION_SECRET=%s\n' "$(openssl rand -hex 20)" > .env
 docker compose up -d --build
-docker compose exec app node --experimental-strip-types apps/api/src/cli-create-user.ts \
+docker compose exec app node --experimental-strip-types apps/api/src/cli/create-user.ts \
   psicologa clave-de-prueba Psicóloga
 ```
 

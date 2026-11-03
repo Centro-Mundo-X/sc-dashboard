@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { buildServer, defaultMigrationsFolder } from './server.ts';
+import { buildServer, defaultMigrationsFolder } from './http/server.ts';
 
 const dbPath = process.env.DATABASE_PATH ?? './data/data.sqlite';
 const deviceToken = process.env.DEVICE_TOKEN;

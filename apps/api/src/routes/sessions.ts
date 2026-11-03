@@ -2,7 +2,7 @@ import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Db } from '@sc/db';
 import { events, loadStudyConfig, metricResults, sessions, studyConfig } from '@sc/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { recalculateSession } from './recalculate.ts';
+import { recalculateSession } from '../services/recalculate.ts';
 
 interface SessionFilters {
   participant?: string;

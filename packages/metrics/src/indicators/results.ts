@@ -10,7 +10,7 @@ import {
   ratio,
   type IndicatorDefinition,
   type MetricValue,
-} from './types.ts';
+} from '../types.ts';
 
 function elapsedMs(from: string | undefined, to: string | undefined): number | undefined {
   if (!from || !to) return undefined;

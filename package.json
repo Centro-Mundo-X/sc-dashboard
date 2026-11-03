@@ -9,11 +9,11 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "seed": "node --experimental-strip-types apps/api/src/cli-seed.ts",
+    "seed": "node --experimental-strip-types apps/api/src/cli/seed.ts",
     "start": "node --experimental-strip-types apps/api/src/main.ts",
     "build": "pnpm --filter @sc/web exec vite build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "create-user": "node --experimental-strip-types apps/api/src/cli-create-user.ts"
+    "create-user": "node --experimental-strip-types apps/api/src/cli/create-user.ts"
   }
 }

@@ -2,15 +2,15 @@
  * Creates a dashboard user.
  *
  * Usage:
- *   node --experimental-strip-types apps/api/src/cli-create-user.ts <username> <password> [displayName]
+ *   node --experimental-strip-types apps/api/src/cli/create-user.ts <username> <password> [displayName]
  */
 import { openDatabase } from '@sc/db';
-import { createUser } from './users.ts';
+import { createUser } from '../services/users.ts';
 
 const [username, password, displayName] = process.argv.slice(2);
 
 if (!username || !password) {
-  console.error('usage: cli-create-user.ts <username> <password> [displayName]');
+  console.error('usage: cli/create-user.ts <username> <password> [displayName]');
   process.exit(1);
 }
 

@@ -1,5 +1,5 @@
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import type { Db } from './client.ts';
+import type { Db } from '../schema/client.ts';
 
 /**
  * Applies migrations with foreign keys temporarily disabled.

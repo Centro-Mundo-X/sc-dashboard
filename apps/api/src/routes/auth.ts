@@ -1,6 +1,6 @@
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Db } from '@sc/db';
-import { verifyCredentials } from './users.ts';
+import { verifyCredentials } from '../services/users.ts';
 
 interface LoginBody {
   username?: unknown;

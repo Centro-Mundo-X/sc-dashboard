@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import type { Db } from './client.ts';
-import { studyConfig } from './schema.ts';
-import { STUDY_CONFIG_SEED } from './seed.ts';
+import type { Db } from '../schema/client.ts';
+import { studyConfig } from '../schema/tables.ts';
+import { STUDY_CONFIG_SEED } from '../seed/seed.ts';
 
 /** Configuration values the metric engine reads, with approval state. */
 export interface StudyConfigSnapshot {

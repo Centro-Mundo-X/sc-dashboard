@@ -10,7 +10,7 @@ import {
   type IndicatorContext,
   type IndicatorDefinition,
   type MetricValue,
-} from './types.ts';
+} from '../types.ts';
 
 /** Milliseconds between two ISO timestamps, or undefined if either is missing. */
 function elapsedMs(from: string | undefined, to: string | undefined): number | undefined {

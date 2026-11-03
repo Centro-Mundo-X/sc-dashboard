@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import type { Db } from './client.ts';
-import { cases } from './schema.ts';
-import { CASE_SEED } from './seed.ts';
+import type { Db } from '../schema/client.ts';
+import { cases } from '../schema/tables.ts';
+import { CASE_SEED } from '../seed/seed.ts';
 
 export interface CaseRow {
   id: string;

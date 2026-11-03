@@ -18,7 +18,7 @@ import {
   type SessionClose,
   type SessionEvent,
   type SessionHeader,
-} from './schemas.ts';
+} from '../contract/schemas.ts';
 
 export interface InvalidEvent {
   /** Line number in the file, 1-based. */

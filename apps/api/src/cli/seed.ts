@@ -8,9 +8,9 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { loadStudyConfig } from '@sc/db';
-import { ingestSession } from './ingest.ts';
-import { buildServer } from './server.ts';
-import { createUser } from './users.ts';
+import { ingestSession } from '../services/ingest.ts';
+import { buildServer, defaultMigrationsFolder } from '../http/server.ts';
+import { createUser } from '../services/users.ts';
 
 const dbPath = process.env.DATABASE_PATH ?? './data/data.sqlite';
 const username = process.env.SEED_USER ?? 'psicologa';
@@ -24,9 +24,7 @@ const { app, db } = await buildServer({
   dbPath,
   deviceToken: 'seed-only',
   sessionSecret: 'seed-only-secret-at-least-32-characters-long',
-  migrationsFolder:
-    process.env.MIGRATIONS_FOLDER ??
-    new URL('../../../packages/db/migrations', import.meta.url).pathname,
+  migrationsFolder: process.env.MIGRATIONS_FOLDER ?? defaultMigrationsFolder,
   logger: false,
 });
 

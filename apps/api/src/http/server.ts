@@ -3,9 +3,9 @@ import cookie from '@fastify/cookie';
 import session from '@fastify/session';
 import { loadStudyConfig, openDatabase, runMigrations, seedCases, seedStudyConfig, type Db } from '@sc/db';
 import { hashToken, requireDeviceToken, requireUser } from './auth.ts';
-import { ingestSession } from './ingest.ts';
-import { registerSessionRoutes } from './routes-sessions.ts';
-import { registerAuthRoutes } from './routes-auth.ts';
+import { ingestSession } from '../services/ingest.ts';
+import { registerSessionRoutes } from '../routes/sessions.ts';
+import { registerAuthRoutes } from '../routes/auth.ts';
 
 export interface ServerOptions {
   dbPath: string;
@@ -19,7 +19,7 @@ export interface ServerOptions {
 
 /** Default migrations location, resolved from the repo layout. */
 export const defaultMigrationsFolder = new URL(
-  '../../../packages/db/migrations',
+  '../../../../packages/db/migrations',
   import.meta.url,
 ).pathname;
 

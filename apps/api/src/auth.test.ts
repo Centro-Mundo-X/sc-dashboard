@@ -3,8 +3,8 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { createUser } from './users.ts';
-import { buildServer, type BuiltServer } from './server.ts';
+import { createUser } from './services/users.ts';
+import { buildServer, type BuiltServer } from './http/server.ts';
 
 const dir = mkdtempSync(join(tmpdir(), 'sc-auth-'));
 const dbPath = join(dir, 'auth.sqlite');

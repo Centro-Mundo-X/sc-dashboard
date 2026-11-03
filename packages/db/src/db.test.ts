@@ -3,12 +3,12 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { runMigrations } from './migrations-runner.ts';
+import { runMigrations } from './migrations/migrations-runner.ts';
 import { eq } from 'drizzle-orm';
-import { openDatabase } from './client.ts';
-import { loadStudyConfig, seedStudyConfig } from './config-repo.ts';
-import { findCase, listCases, seedCases } from './case-repo.ts';
-import { cases, participants, sessions, studyConfig } from './schema.ts';
+import { openDatabase } from './schema/client.ts';
+import { loadStudyConfig, seedStudyConfig } from './repositories/config-repo.ts';
+import { findCase, listCases, seedCases } from './repositories/case-repo.ts';
+import { cases, participants, sessions, studyConfig } from './schema/tables.ts';
 
 const dir = mkdtempSync(join(tmpdir(), 'sc-db-'));
 const dbPath = join(dir, 'test.sqlite');

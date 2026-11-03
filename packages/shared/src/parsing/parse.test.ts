@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { parseSessionJsonl } from './parse.ts';
 
-const fixturePath = new URL('../../../fixtures/session-complete.jsonl', import.meta.url);
+const fixturePath = new URL('../../../../fixtures/session-complete.jsonl', import.meta.url);
 const fixture = readFileSync(fixturePath, 'utf8');
 
 describe('parseSessionJsonl', () => {
