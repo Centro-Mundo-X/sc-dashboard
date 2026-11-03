@@ -5,10 +5,9 @@ metadata:
 spec:
   containers:
     - name: app
-      # Built from the Dockerfile in this repository:
-      #   podman build -t simulacion-clinica .
-      # Change this if you push the image to a registry.
-      image: localhost/simulacion-clinica:latest
+      # Demo image: it seeds a sample user and session on first start.
+      # Change the tag to move to a release image.
+      image: ghcr.io/centro-mundo-x/sc-dashboard:demo
       envFrom:
         - configMapRef:
             name: env

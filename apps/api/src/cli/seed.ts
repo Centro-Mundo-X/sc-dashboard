@@ -13,8 +13,8 @@ import { buildServer, defaultMigrationsFolder } from '../http/server.ts';
 import { createUser } from '../services/users.ts';
 
 const dbPath = process.env.DATABASE_PATH ?? './data/data.sqlite';
-const username = process.env.SEED_USER ?? 'psicologa';
-const password = process.env.SEED_PASSWORD ?? 'clave-de-prueba';
+const username = process.env.SEED_USER ?? 'demo';
+const password = process.env.SEED_PASSWORD ?? 'demo-access-2024';
 
 mkdirSync(dirname(dbPath), { recursive: true });
 
@@ -29,7 +29,7 @@ const { app, db } = await buildServer({
 });
 
 try {
-  await createUser(db, { username, password, displayName: 'Psicóloga' });
+  await createUser(db, { username, password, displayName: 'Demo' });
   console.log(`usuario creado: ${username}`);
 } catch {
   console.log(`usuario ${username} ya existía`);

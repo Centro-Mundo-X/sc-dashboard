@@ -25,5 +25,5 @@ COPY --from=build /app /app
 RUN mkdir -p /app/data
 EXPOSE 3000
 
-# The API owns ingestion and the dashboard is served from the same process.
-CMD ["node", "--experimental-strip-types", "apps/api/src/main.ts"]
+# Runs the seed first when SEED_DEMO_DATA=true, then the server.
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

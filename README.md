@@ -16,7 +16,7 @@ pnpm seed     # crea data/, la base, el usuario y carga una sesión de ejemplo
 pnpm dev      # levanta el API y el dashboard
 ```
 
-Abrir **http://localhost:5173** e ingresar con `psicologa` / `clave-de-prueba`.
+Abrir **http://localhost:5173** e ingresar con `demo` / `demo-access-2024`.
 
 `pnpm seed` es idempotente: ejecutarlo dos veces no duplica nada.
 
@@ -40,7 +40,7 @@ curl -X POST localhost:3000/api/sessions/ingest \
 printf 'DEVICE_TOKEN=dev\nSESSION_SECRET=%s\n' "$(openssl rand -hex 20)" > .env
 docker compose up -d --build
 docker compose exec app node --experimental-strip-types apps/api/src/cli/create-user.ts \
-  psicologa clave-de-prueba Psicóloga
+  demo demo-access-2024 Demo
 ```
 
 Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
@@ -48,22 +48,43 @@ Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
 ### Imagen publicada
 
 `.github/workflows/image.yml` construye la imagen y la publica en GHCR cuando se
-empuja un tag `v*`, o a mano desde Actions. Queda en
+empuja un tag, o a mano desde Actions. Queda en
 `ghcr.io/centro-mundo-x/sc-dashboard:<tag>`.
 
 El workflow toma el nombre de `${{ github.repository }}`, que es
 `Centro-Mundo-X/sc-dashboard`. GHCR pasa el nombre a minúsculas, así que la ruta
 real lleva `centro-mundo-x`.
 
-La imagen corre con `NODE_ENV=production`, que marca la cookie de sesión como
-`Secure`. **El dashboard solo inicia sesión por HTTPS**: hay que servirlo detrás de
-un proxy con TLS.
+Compose y `pod.yaml` usan el tag `demo`, que trae datos de prueba. Ver más abajo.
 
-El `pod.yaml` es para Podman. Construye la imagen localmente y apunta a ella:
+### Imagen con datos de prueba
+
+Con `SEED_DEMO_DATA=true` el contenedor prepara la base antes de arrancar: crea el
+usuario del dashboard y carga la sesión de ejemplo. Es idempotente, así que
+reiniciar no duplica nada.
+
+`docker-compose.yml` y `pod.yaml` ya vienen con ese valor. En el pod, agregalo al
+`ConfigMap env`:
+
+```yaml
+data:
+  SEED_DEMO_DATA: "true"
+  SEED_USER: "demo"
+  SEED_PASSWORD: "demo-access-2024"
+```
+
+Para una base vacía, `SEED_DEMO_DATA: "false"`. El usuario se crea aparte:
 
 ```bash
-podman build -t localhost/simulacion-clinica .
+podman exec <container> node --experimental-strip-types apps/api/src/cli/create-user.ts <usuario> <clave>
 ```
+
+### HTTPS es obligatorio
+
+La imagen corre con `NODE_ENV=production`, que marca la cookie de sesión como
+`Secure`. **El dashboard solo inicia sesión por HTTPS**: sobre HTTP plano el login
+responde 200 pero la cookie no se guarda, y el resto de las peticiones da 401.
+Hay que servirlo detrás de un proxy con TLS.
 
 ## Comandos
 

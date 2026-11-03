@@ -26,9 +26,9 @@ before(async () => {
     logger: false,
   });
   await createUser(built.db, {
-    username: 'psicologa',
-    password: 'clave-de-prueba',
-    displayName: 'Psicóloga',
+    username: 'demo',
+    password: 'demo-access-2024',
+    displayName: 'Demo',
   });
   await built.app.ready();
 });
@@ -48,12 +48,12 @@ function login(username: string, password: string) {
 
 describe('authentication', () => {
   it('rejects a wrong password', async () => {
-    const response = await login('psicologa', 'incorrecta');
+    const response = await login('demo', 'wrong-password');
     assert.equal(response.statusCode, 401);
   });
 
   it('rejects an unknown user', async () => {
-    const response = await login('nadie', 'clave-de-prueba');
+    const response = await login('nobody', 'demo-access-2024');
     assert.equal(response.statusCode, 401);
   });
 
@@ -61,15 +61,15 @@ describe('authentication', () => {
     const response = await built.app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { username: 'psicologa' },
+      payload: { username: 'demo' },
     });
     assert.equal(response.statusCode, 400);
   });
 
   it('accepts valid credentials and sets the dashboard cookie', async () => {
-    const response = await login('psicologa', 'clave-de-prueba');
+    const response = await login('demo', 'demo-access-2024');
     assert.equal(response.statusCode, 200);
-    assert.equal(response.json().username, 'psicologa');
+    assert.equal(response.json().username, 'demo');
 
     const cookies = response.cookies.map((c) => c.name);
     assert.ok(cookies.includes('sc_user'));
@@ -77,7 +77,7 @@ describe('authentication', () => {
   });
 
   it('grants access to session routes once logged in', async () => {
-    const auth = await login('psicologa', 'clave-de-prueba');
+    const auth = await login('demo', 'demo-access-2024');
     const cookie = auth.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
 
     const response = await built.app.inject({
@@ -89,7 +89,7 @@ describe('authentication', () => {
   });
 
   it('does not expose the password hash', async () => {
-    const response = await login('psicologa', 'clave-de-prueba');
+    const response = await login('demo', 'demo-access-2024');
     assert.equal(response.body.includes('argon2'), false);
   });
 });
@@ -107,7 +107,7 @@ describe('recalculate', () => {
     });
     assert.equal(ingest.statusCode, 200);
 
-    const auth = await login('psicologa', 'clave-de-prueba');
+    const auth = await login('demo', 'demo-access-2024');
     const cookie = auth.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
 
     const response = await built.app.inject({
@@ -124,7 +124,7 @@ describe('recalculate', () => {
   });
 
   it('returns 404 for an unknown session', async () => {
-    const auth = await login('psicologa', 'clave-de-prueba');
+    const auth = await login('demo', 'demo-access-2024');
     const cookie = auth.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
 
     const response = await built.app.inject({

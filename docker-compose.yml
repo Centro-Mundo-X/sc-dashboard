@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ghcr.io/centro-mundo-x/sc-dashboard:demo
     restart: unless-stopped
     ports:
       - '3000:3000'
@@ -11,6 +11,10 @@ services:
       DEVICE_TOKEN: ${DEVICE_TOKEN:?set DEVICE_TOKEN}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET}
       PORT: 3000
+      # Fills the database with the sample user and session on first start.
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      SEED_USER: ${SEED_USER:-demo}
+      SEED_PASSWORD: ${SEED_PASSWORD:-demo-access-2024}
 
 volumes:
   sc-data:
