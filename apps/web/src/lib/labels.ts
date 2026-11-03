@@ -56,6 +56,34 @@ export const labels = {
     saveReason: 'Guardar motivo',
     noMetrics: 'Sin métricas calculadas.',
     notEvaluable: 'No evaluable',
+    evaluatedIndicators: 'Indicadores evaluados',
+    saved: 'Guardado',
+  },
+
+  timeline: {
+    index: '#',
+    time: 'Hora',
+    scene: 'Escena',
+    procedure: 'Procedimiento',
+    action: 'Acción',
+    outcome: 'Resultado',
+  },
+
+  filter: {
+    submit: 'Filtrar',
+  },
+
+  caseWarning: {
+    title: 'está incompleto',
+    body: 'Faltan criterios de comparación. Las métricas que los necesitan no se pueden evaluar.',
+  },
+
+  footer: {
+    provisional: 'Los criterios clínicos de esta versión son provisionales y están pendientes de aprobación.',
+  },
+
+  header: {
+    context: 'Tesis · Bello Campo',
   },
 
   scene: {

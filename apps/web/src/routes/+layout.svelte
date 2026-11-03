@@ -18,7 +18,7 @@
         </a>
         <span class="text-faint text-[0.75rem]">{labels.subtitle}</span>
       </div>
-      <span class="label">Tesis · Bello Campo</span>
+      <span class="label">{labels.header.context}</span>
     </div>
   </header>
 
@@ -28,7 +28,7 @@
 
   <footer class="mx-auto w-full max-w-6xl px-5 pb-6">
     <p class="text-faint border-t border-(--rule) pt-3 text-[0.6875rem]">
-      Los criterios clínicos de esta versión son provisionales y están pendientes de aprobación.
+      {labels.footer.provisional}
     </p>
   </footer>
 </div>
