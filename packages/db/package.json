@@ -1,0 +1,24 @@
+{
+  "name": "@sc/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "node --test --experimental-strip-types 'src/**/*.test.ts'",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --experimental-strip-types src/migrate.ts"
+  },
+  "dependencies": {
+    "@sc/shared": "workspace:*",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.31.1",
+    "typescript": "^5.7.3"
+  }
+}
