@@ -100,7 +100,7 @@ si más adelante hay pretest y postest tampoco hace falta migrar.
 | `procedure` | enum | sí | Ver 4.3 |
 | `action` | string snake_case | sí | Ver 4.4 |
 | `object` | string \| null | no | Elemento 3D involucrado |
-| `value` | string \| number \| null | no | Dato introducido o mostrado |
+| `value` | string \| number \| null | no | Dato introducido o mostrado. **El tipo se conserva**: un pulso de `76` viaja como numero, no como texto |
 | `outcome` | enum | sí | Ver 4.5 |
 | `context` | objeto | no | Pares clave-valor adicionales |
 

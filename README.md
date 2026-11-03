@@ -27,3 +27,40 @@ apps/
   web/       SvelteKit
 fixtures/    Sesiones de ejemplo
 ```
+
+## Desarrollo
+
+```bash
+pnpm install
+pnpm test
+```
+
+Cargar una sesión de ejemplo y ver el dashboard:
+
+```bash
+# API
+DATABASE_PATH=./data/data.sqlite DEVICE_TOKEN=dev \
+  SESSION_SECRET=$(openssl rand -hex 20) \
+  pnpm --filter @sc/api start
+
+# Usuario del dashboard
+pnpm create-user psicologa una-contraseña-larga "Psicóloga"
+
+# Ingesta del fixture
+curl -X POST localhost:3000/api/sessions/ingest \
+  -H "Authorization: Bearer dev" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @fixtures/session-complete.jsonl
+
+# Dashboard
+pnpm --filter @sc/web dev
+```
+
+## Despliegue
+
+```bash
+DEVICE_TOKEN=... SESSION_SECRET=... docker compose up -d
+```
+
+El volumen `sc-data` guarda el archivo SQLite. Sin él, los datos se pierden al recrear el
+contenedor.

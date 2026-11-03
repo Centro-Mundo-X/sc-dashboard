@@ -188,6 +188,7 @@ de forma persistente, el tesista copia los archivos y los sube con `ingest-batch
 |---|---|
 | `POST /api/auth/login` | Inicia sesión |
 | `POST /api/auth/logout` | Cierra sesión |
+| `GET /api/auth/me` | Usuario de la sesión actual |
 | `GET /api/sessions` | Lista con filtros por participante, fase, estado y fecha |
 | `GET /api/sessions/:id` | Detalle con timeline de eventos |
 | `GET /api/sessions/:id/metrics` | Métricas calculadas |
@@ -246,6 +247,23 @@ Detalle de indicadores y parámetros en `docs/METRICS.md`.
 
 Un `docker compose up` en el homelab: un contenedor con API y dashboard, un volumen para
 `data.sqlite` y nada más.
+
+Variables obligatorias:
+
+```
+DEVICE_TOKEN    token que usa Unity para la ingesta
+SESSION_SECRET  secreto de firma, minimo 32 caracteres
+DATABASE_PATH   ruta del archivo SQLite
+```
+
+El primer usuario del dashboard se crea con la CLI:
+
+```bash
+pnpm create-user psicologa <contraseña> "Psicóloga"
+```
+
+Las contraseñas se guardan con argon2id. El login vive en la aplicacion, sin proxy de
+autenticacion.
 
 ## 13. Después
 
