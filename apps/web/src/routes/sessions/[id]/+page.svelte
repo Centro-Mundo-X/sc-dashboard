@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
+  import { enhance } from '$app/forms';
   import { labels, INDICATOR_SCENE } from '#lib/labels';
   import { dateTime } from '#lib/format';
   import { INDICATOR_ORDER, SCENE_ORDER, allEvaluated, type MetricRow } from '#lib/metrics';
@@ -10,7 +10,14 @@
   import EventTimeline from '#lib/components/EventTimeline.svelte';
   import type { PageProps } from './$types';
 
-  let { data }: PageProps = $props();
+  let { data, form }: PageProps = $props();
+
+  /**
+   * The stored reason, preferring what the action just returned. `update()`
+   * re-runs `load`, but reads optimistically from the action result so the
+   * field shows the saved value the moment it is saved.
+   */
+  const savedReason = $derived(form?.reason ?? data.session.incompleteReason ?? '');
 
   /**
    * Duration per scene, from the session's own timestamps. A scene with no
@@ -75,25 +82,8 @@
 
   const evaluated = $derived(byIndicator.filter(([, ms]) => allEvaluated(ms)).length);
 
-  let reason = $state('');
   let saving = $state(false);
   let saved = $state(false);
-
-  $effect.pre(() => {
-    reason = data.session.incompleteReason ?? '';
-  });
-
-  async function saveReason() {
-    saving = true;
-    await fetch(`/api/sessions/${data.session.id}/incomplete-reason`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ reason }),
-    });
-    saving = false;
-    saved = true;
-    await invalidateAll();
-  }
 </script>
 
 <svelte:head><title>{labels.appName} · {data.session.participantCode}</title></svelte:head>
@@ -133,20 +123,38 @@
 {/if}
 
 {#if data.session.status === 'incomplete'}
-  <section class="mb-4 flex flex-wrap items-end gap-2 border border-(--hairline) bg-(--panel) px-3 py-2">
+  <form
+    method="POST"
+    action="?/reason"
+    use:enhance={() => {
+      saving = true;
+      saved = false;
+      return async ({ update }) => {
+        await update();
+        saving = false;
+        saved = true;
+      };
+    }}
+    class="mb-4 flex flex-wrap items-end gap-2 border border-(--hairline) bg-(--panel) px-3 py-2"
+  >
     <label class="grid flex-1 gap-1">
       <span class="label">{labels.session.incompleteReason}</span>
-      <input bind:value={reason} placeholder="participant_abandoned" class="field" />
+      <input
+        name="reason"
+        value={savedReason}
+        placeholder="participant_abandoned"
+        class="field"
+      />
     </label>
     <button
-      onclick={saveReason}
+      type="submit"
       disabled={saving}
       class="border border-(--hairline) px-3 py-1.5 text-[0.75rem] font-medium transition hover:bg-(--hover) disabled:opacity-50"
     >
       {labels.session.saveReason}
     </button>
     {#if saved}<span class="text-signal-ok text-[0.75rem]">{labels.session.saved}</span>{/if}
-  </section>
+  </form>
 {/if}
 
 <h2 class="label mb-2">{labels.session.metrics}</h2>
