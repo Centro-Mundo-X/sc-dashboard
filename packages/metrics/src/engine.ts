@@ -19,11 +19,10 @@ import {
 } from './types.ts';
 
 /**
- * The thirteen indicators of the thesis metric tables, in the order they appear
- * in `Metricas de TESIS ASETARO.pdf`.
+ * The thirteen indicators of the thesis, in their documented order.
  *
- * This list mirrors the source document exactly: one entry per indicator, three
- * metrics each. If an indicator is not in those tables, it does not belong here.
+ * One entry per indicator, three metrics each. An indicator that is not in the
+ * thesis metric tables does not belong in this list.
  */
 export const INDICATORS: readonly IndicatorDefinition[] = [
   // Table 1 · Vital signs

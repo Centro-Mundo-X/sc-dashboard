@@ -1,7 +1,6 @@
 # Métricas
 
-Fuente: los cuadros de `docs/Metricas de TESIS ASETARO.pdf` y la ruta de jugabilidad de
-`docs/Especificacion_RV_Escenas_Tesis.pdf`.
+Fuente: los cuadros de métricas de la tesis y la ruta de jugabilidad de las escenas de RV.
 
 Los identificadores van en inglés por `CONVENTIONS.md`. El texto, en español.
 
@@ -62,8 +61,8 @@ pendiente de definir con la psicóloga. Hasta entonces, el color no opina.
 
 ## 4. Indicadores
 
-Los trece indicadores de los cuadros de `Metricas de TESIS ASETARO.pdf`, con sus treinta y
-nueve métricas. Cada fila corresponde a una fila del cuadro de origen.
+Los trece indicadores de los cuadros de métricas de la tesis, con sus treinta y nueve
+métricas. Cada fila corresponde a una fila del cuadro de origen.
 
 **Si un indicador o una métrica no está en esos cuadros, no se calcula.** No se agregan
 métricas propias: el motor implementa lo que la tesis definió, nada más.

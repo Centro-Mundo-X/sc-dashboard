@@ -6,11 +6,11 @@ Tesis sobre estrés laboral en personal de salud del centro de urgencias de Bell
 (Chacao). La intervención es una app de realidad virtual con tres escenas: toma de signos
 vitales, rayos X y entrega de resultados.
 
-Material de referencia:
+Material de referencia, en `docs/`:
 
-- `docs/Especificacion_RV_Escenas_Tesis.pdf` — qué ocurre en cada escena y qué hay que registrar.
-- `docs/Metricas de TESIS ASETARO.pdf` — cuadros de indicadores con métricas M1/M2/M3.
-- `docs/Copia de Proyecto_V1_ASETARO.pdf` — anteproyecto.
+- Especificación de las escenas de RV — qué ocurre en cada escena y qué hay que registrar.
+- Cuadros de métricas de la tesis — los indicadores con sus métricas M1/M2/M3.
+- Anteproyecto de la tesis.
 
 Este backend no pertenece a la tesis. Sirve al proyecto VR: recibe las sesiones que produce
 Unity, calcula las métricas y las muestra en un dashboard.

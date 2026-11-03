@@ -3,9 +3,8 @@
 Documento para revisar con el equipo clínico. No es una guía técnica.
 
 Las treinta y nueve métricas de este documento son **exactamente** las de los tres cuadros de
-`Metricas de TESIS ASETARO.pdf`: trece indicadores, tres métricas por indicador. No se agregó
-ninguna métrica propia. Cuando este documento y el cuadro original no coinciden, el cuadro
-manda.
+métricas de la tesis: trece indicadores, tres métricas por indicador. No se agregó ninguna
+métrica propia. Cuando este documento y el cuadro original no coinciden, el cuadro manda.
 
 Cada métrica se explica en tres partes:
 

@@ -49,9 +49,8 @@
   });
 
   /**
-   * Indicator order, following the metric tables in `Metricas de TESIS
-   * ASETARO.pdf`. The database returns rows alphabetically; a clinical reader
-   * expects the order of the source document.
+   * Indicator order, as defined by the thesis. The database returns rows
+   * alphabetically; a clinical reader expects the documented order.
    */
   const INDICATOR_ORDER = [
     'breathing',
