@@ -29,7 +29,7 @@ export const correspondence: IndicatorDefinition = {
   procedure: 'correspondence',
   scene: 'results_delivery',
   names: { m1: 'identifiers_ratio', m2: 'report_correct', m3: 'communications_before_check' },
-  evaluate: ({ events }) => {
+  evaluate: ({ events, sessionEvents }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const panel = firstByAction(events, 'panel_opened');
@@ -44,7 +44,7 @@ export const correspondence: IndicatorDefinition = {
         : { kind: 'boolean', value: matches === true };
 
     const corrected = firstByAction(events, 'report_corrected');
-    const spoken = firstByAction(events, 'verbal_response');
+    const spoken = firstByAction(sessionEvents, 'verbal_response');
     const checkedAt = [compared, corrected].filter(isCompleted).at(-1)?.occurred_at;
     if (!spoken || !checkedAt) {
       out.m3 = notEvaluable('missing verification or communication event');
@@ -172,7 +172,7 @@ export const comprehension: IndicatorDefinition = {
   procedure: 'comprehension',
   scene: 'results_delivery',
   names: { m1: 'check_performed', m2: 'misunderstandings_resolved', m3: 'instructions_understood_ratio' },
-  evaluate: ({ events }) => {
+  evaluate: ({ events, sessionEvents }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const asked = firstByAction(events, 'comprehension_asked');
@@ -189,7 +189,8 @@ export const comprehension: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: clarified };
     }
 
-    const communicated = events.filter((e) => e.action === 'phrase_communicated');
+    // Instructions are communicated in patient_preparation, not in this procedure.
+    const communicated = sessionEvents.filter((e) => e.action === 'phrase_communicated');
     const understood = communicated.filter((e) => e.outcome !== 'omitted').length;
     out.m3 = communicated.length > 0 ? ratio(understood, communicated.length) : notEvaluable('no instructions communicated');
 

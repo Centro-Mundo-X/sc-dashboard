@@ -53,12 +53,13 @@ const SLOTS: readonly MetricSlot[] = ['m1', 'm2', 'm3'];
  */
 export function evaluateSession({ session, config }: EvaluateOptions): EvaluationResult {
   const caseId = session.header.case_id;
+  const sessionEvents = session.events as SessionEvent[];
   const results: IndicatorResult[] = [];
   let notEvaluableCount = 0;
 
   for (const definition of INDICATORS) {
-    const events = eventsForProcedure(session.events as SessionEvent[], definition.procedure);
-    const produced = definition.evaluate({ events, config, caseId });
+    const events = eventsForProcedure(sessionEvents, definition.procedure);
+    const produced = definition.evaluate({ events, sessionEvents, config, caseId });
     const metrics: ComputedMetric[] = [];
 
     for (const slot of SLOTS) {

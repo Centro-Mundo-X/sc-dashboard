@@ -177,11 +177,13 @@ export const vitalsIntegration: IndicatorDefinition = {
   procedure: 'vitals_integration',
   scene: 'vital_signs',
   names: { m1: 'correct_vitals_of_three', m2: 'omitted_fields', m3: 'chart_discrepancies' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ sessionEvents, config, caseId }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const expected = caseParam(config, 'vitals_key_by_case', caseId) as Record<string, unknown> | undefined;
-    const recorded = events.filter((e) => e.action === 'value_recorded');
+    // The three values are recorded inside their own procedures, so this
+    // indicator reads the whole session rather than its own slice.
+    const recorded = sessionEvents.filter((e) => e.action === 'value_recorded' && e.object?.startsWith('field_'));
     const byField = new Map(recorded.map((e) => [e.object ?? '', e]));
 
     const rr = asNumber(byField.get('field_rr')?.value);

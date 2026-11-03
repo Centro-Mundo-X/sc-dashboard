@@ -32,7 +32,13 @@ export type StudyConfigValues = Record<string, unknown>;
 
 /** Everything an indicator needs. Kept narrow so indicators stay pure. */
 export interface IndicatorContext {
+  /** Events of this indicator's own procedure. */
   events: SessionEvent[];
+  /**
+   * Every event of the session. Some indicators need to see events from other
+   * procedures, e.g. knowing when the capture fired while judging preparation.
+   */
+  sessionEvents: SessionEvent[];
   config: StudyConfigValues;
   caseId: string;
 }

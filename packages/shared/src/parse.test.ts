@@ -14,10 +14,10 @@ describe('parseSessionJsonl', () => {
 
     assert.equal(result.session.header.participant_code, 'P01');
     assert.equal(result.session.header.phase, 'single');
-    assert.equal(result.session.events.length, 38);
+    assert.equal(result.session.events.length, 43);
     assert.equal(result.invalidEvents.length, 0);
     assert.equal(result.warnings.length, 0);
-    assert.equal(result.session.close?.total_events, 38);
+    assert.equal(result.session.close?.total_events, 43);
     assert.deepEqual(result.session.close?.scenes_completed, [
       'vital_signs',
       'x_ray',
@@ -30,7 +30,7 @@ describe('parseSessionJsonl', () => {
     assert.equal(result.ok, true);
     if (!result.ok) return;
     const ids = result.session.events.map((e) => e.event_id);
-    assert.deepEqual(ids, Array.from({ length: 38 }, (_, i) => i + 1));
+    assert.deepEqual(ids, Array.from({ length: 43 }, (_, i) => i + 1));
   });
 
   it('rejects a file without a header', () => {

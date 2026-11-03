@@ -24,7 +24,7 @@ export const identityVerification: IndicatorDefinition = {
   procedure: 'identity_verification',
   scene: 'x_ray',
   names: { m1: 'checks_completed_ratio', m2: 'study_matches_request', m3: 'activations_before_check' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ events, sessionEvents, config, caseId }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const consoleOpened = firstByAction(events, 'console_opened');
@@ -48,7 +48,7 @@ export const identityVerification: IndicatorDefinition = {
 
     // Captures taken before the identity check finished. The spec records this
     // without blocking the participant.
-    const capture = firstByAction(events, 'capture_activated');
+    const capture = firstByAction(sessionEvents, 'capture_activated');
     const checkDoneAt = [wristband, dialogue].filter(isCompleted).at(-1)?.occurred_at;
     if (!capture || !checkDoneAt) {
       out.m3 = notEvaluable('missing capture or verification event');
@@ -65,7 +65,7 @@ export const patientPreparation: IndicatorDefinition = {
   procedure: 'patient_preparation',
   scene: 'x_ray',
   names: { m1: 'instructions_ratio', m2: 'patient_confirmed', m3: 'capture_before_prep' },
-  evaluate: ({ events }) => {
+  evaluate: ({ events, sessionEvents }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const phrases = events.filter((e) => e.action === 'phrase_communicated');
@@ -75,7 +75,7 @@ export const patientPreparation: IndicatorDefinition = {
     out.m1 = total > 0 ? ratio(communicated, total) : notEvaluable('no instructions expected');
     out.m2 = { kind: 'boolean', value: isCompleted(firstByAction(events, 'patient_confirmed')) };
 
-    const capture = firstByAction(events, 'capture_activated');
+    const capture = firstByAction(sessionEvents, 'capture_activated');
     const confirmed = firstByAction(events, 'patient_confirmed');
     if (!capture || !confirmed) {
       out.m3 = notEvaluable('missing capture or confirmation event');

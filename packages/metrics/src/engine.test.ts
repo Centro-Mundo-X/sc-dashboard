@@ -50,8 +50,17 @@ describe('evaluateSession', () => {
     assert.equal(m3.kind === 'number' ? m3.value : -1, 31100);
   });
 
-  it('flags the wrong cuff', () => {
+  it('matches the cuff against the case key', () => {
     const result = evaluateSession({ session: fixtureSession(), config: STUDY_CONFIG });
+    assert.deepEqual(metricOf(result, 'bp_preparation', 'cuff_matches'), { kind: 'boolean', value: true });
+  });
+
+  it('flags a wrong cuff', () => {
+    const session = fixtureSession();
+    session.events = session.events.map((event) =>
+      event.action === 'cuff_selected' ? { ...event, value: 'small' } : event,
+    );
+    const result = evaluateSession({ session, config: STUDY_CONFIG });
     assert.deepEqual(metricOf(result, 'bp_preparation', 'cuff_matches'), { kind: 'boolean', value: false });
   });
 
@@ -72,13 +81,28 @@ describe('evaluateSession', () => {
     assert.deepEqual(metricOf(result, 'pulse', 'corrected_before_confirm'), { kind: 'boolean', value: true });
   });
 
-  it('marks an omitted instruction as a ratio below one', () => {
+  it('counts every communicated instruction', () => {
     const result = evaluateSession({ session: fixtureSession(), config: STUDY_CONFIG });
     const m1 = metricOf(result, 'patient_preparation', 'instructions_ratio');
     assert.equal(m1.kind, 'ratio');
     if (m1.kind !== 'ratio') return;
-    assert.equal(m1.numerator, 1);
-    assert.equal(m1.denominator, 2);
+    assert.equal(m1.numerator, 3);
+    assert.equal(m1.denominator, 3);
+  });
+
+  it('marks an omitted instruction as a ratio below one', () => {
+    const session = fixtureSession();
+    session.events = session.events.map((event) =>
+      event.action === 'phrase_communicated' && event.context?.['phrase_id'] === 2
+        ? { ...event, outcome: 'omitted' as const }
+        : event,
+    );
+    const result = evaluateSession({ session, config: STUDY_CONFIG });
+    const m1 = metricOf(result, 'patient_preparation', 'instructions_ratio');
+    assert.equal(m1.kind, 'ratio');
+    if (m1.kind !== 'ratio') return;
+    assert.equal(m1.numerator, 2);
+    assert.equal(m1.denominator, 3);
   });
 
   it('counts the study selection against the request', () => {
@@ -95,6 +119,12 @@ describe('evaluateSession', () => {
     const result = evaluateSession({ session: fixtureSession(), config });
     const m1 = metricOf(result, 'breathing', 'observation_completed');
     assert.equal(m1.kind, 'not_evaluable');
+  });
+
+  it('evaluates every metric with a complete fixture', () => {
+    const result = evaluateSession({ session: fixtureSession(), config: STUDY_CONFIG });
+    assert.equal(result.complete, true);
+    assert.equal(result.notEvaluableCount, 0);
   });
 
   it('never returns a silent false for missing data', () => {
