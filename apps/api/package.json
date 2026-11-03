@@ -1,0 +1,26 @@
+{
+  "name": "@sc/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types --watch src/server.ts",
+    "start": "node --experimental-strip-types src/server.ts",
+    "test": "node --test --experimental-strip-types 'src/**/*.test.ts'",
+    "typecheck": "tsc --noEmit",
+    "prestart": "echo"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/session": "^11.1.0",
+    "@sc/db": "workspace:*",
+    "@sc/metrics": "workspace:*",
+    "@sc/shared": "workspace:*",
+    "fastify": "^5.12.8",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.3"
+  }
+}
