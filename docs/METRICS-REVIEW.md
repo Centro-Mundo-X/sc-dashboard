@@ -2,6 +2,11 @@
 
 Documento para revisar con el equipo clínico. No es una guía técnica.
 
+Las treinta y nueve métricas de este documento son **exactamente** las de los tres cuadros de
+`Metricas de TESIS ASETARO.pdf`: trece indicadores, tres métricas por indicador. No se agregó
+ninguna métrica propia. Cuando este documento y el cuadro original no coinciden, el cuadro
+manda.
+
 Cada métrica se explica en tres partes:
 
 1. **Qué pregunta responde** — en lenguaje llano.
@@ -52,7 +57,7 @@ Cada métrica se explica en tres partes:
 
 ---
 
-### `bp_preparation` — Preparación de la presión
+### `blood_pressure` — Toma de presión arterial
 
 **Comprobaciones completadas**
 - *Pregunta*: ¿Hizo los pasos — `checks_completed_ratio` previos antes de medir la presión?
@@ -72,7 +77,7 @@ Cada métrica se explica en tres partes:
 
 ---
 
-### `bp_measurement` — Medición de la presión
+### `blood_pressure` — Toma de presión arterial (cont.)
 
 **Lectura registrada** — `reading_recorded`
 - *Pregunta*: ¿Anotó algún valor de presión arterial?
@@ -184,41 +189,52 @@ Cada métrica se explica en tres partes:
 
 ---
 
-### `image_capture` — Captura de imagen
+### `acquisition_activation` — Activación de la adquisición
 
-**Captura ejecutada** — `capture_executed`
-- *Pregunta*: ¿Disparó la captura?
-- *Dato*: evento `capture_activated` con resultado `completed`.
-- *Compara contra*: nada, solo presencia.
+**Activación con requisitos completos** — `activated_with_requirements`
+- *Pregunta*: ¿Disparó la adquisición con todo lo previo resuelto?
+- *Dato*: marca de tiempo de `capture_activated` frente a `requirements_completed`.
+- *Compara contra*: el orden temporal de los dos eventos.
+- *Aprobado*: ✅ el cuadro lo pide tal cual.
+
+**Intentos de activación prematura** — `premature_attempts`
+- *Pregunta*: ¿Cuántas veces intentó disparar sin cumplir los requisitos?
+- *Dato*: eventos `capture_rejected`, que el escenario emite cuando rechaza un intento.
+- *Compara contra*: nada, se cuentan.
 - *Aprobado*: ✅
 
----
-
-### `image_review` — Revisión de imagen
-
-**Revisión realizada**
-- *Pregunta*: ¿Revisó la imagen — `review_performed` obtenida?
-- *Dato*: evento `image_reviewed` con resultado `completed`.
-- *Compara contra*: nada, solo presencia.
-- *Aprobado*: ✅
-
-**Defecto detectado** — `defect_detected` · **el nombre está mal**
-- *Pregunta real*: la imagen que se mostró, ¿tenía el defecto técnico programado?
-- *Dato*: el campo `programmed_defect` del evento `image_displayed`.
-- *Compara contra*: nada. Es una propiedad del escenario, no del participante.
-- *Aprobado*: ✅ el cálculo es correcto, pero **la métrica no mide detección**. Mide si el
-  escenario puso el defecto. Debería llamarse `technical_defect_present`. Si se quiere medir
-  detección real, hace falta un evento nuevo: que el participante indique si vio el defecto.
-
-**Duración de la revisión** — `review_duration_ms`
-- *Pregunta*: ¿Cuánto tiempo dedicó a mirar la imagen?
-- *Dato*: diferencia entre `image_displayed` e `image_reviewed`.
+**Tiempo desde requisitos completos hasta activación** — `time_from_requirements_ms`
+- *Pregunta*: ¿Cuánto tardó en disparar una vez que pudo?
+- *Dato*: diferencia entre `requirements_completed` y `capture_activated`.
 - *Compara contra*: nada, se reporta el tiempo.
 - *Aprobado*: ✅
 
 ---
 
-## Escena 3 · Entrega de resultados
+### `image_review` — Revisión de la imagen obtenida
+
+**Revisión de imagen realizada** — `review_performed`
+- *Pregunta*: ¿Revisó la imagen y tomó una decisión?
+- *Dato*: `image_accepted` o `image_rejected`, cualquiera de los dos con resultado `completed`.
+- *Compara contra*: nada, solo presencia.
+- *Aprobado*: ✅
+
+**Decisión concordante con la clave de calidad técnica** — `decision_matches_quality_key`
+- *Pregunta*: ¿Aceptó o rechazó la imagen como correspondía?
+- *Dato*: si hubo `image_rejected` o `image_accepted`.
+- *Compara contra*: el campo `programmed_defect` del evento `image_displayed`. Si la imagen
+  tenía defecto, lo correcto era rechazarla; si estaba limpia, aceptarla.
+- *Aprobado*: ⚠️ el cálculo sigue el cuadro, pero **la clave de calidad la define el caso**.
+  Hoy el defecto se marca en el evento que envía Unity, no en `cases.criteria`.
+
+**Repeticiones justificadas / repeticiones realizadas** — `justified_repeats_ratio`
+- *Pregunta*: De las veces que pidió repetir, ¿cuántas estaban justificadas?
+- *Dato*: eventos `image_repeat_requested`.
+- *Compara contra*: si la imagen tenía defecto. Una repetición es justificada cuando la imagen
+  tenía el defecto programado.
+- *Aprobado*: ⚠️ si no pidió repetir, la métrica queda sin evaluar: no hay nada que juzgar.
+
+---
 
 ### `correspondence` — Correspondencia
 
@@ -342,8 +358,11 @@ Cada métrica se explica en tres partes:
 | Confianza | Cantidad | Cuáles |
 |---|---|---|
 | ✅ No requiere criterio clínico | 13 | tiempos, conteos de presencia, coincidencias contra lo que mostró el propio equipo en pantalla |
-| ⚠️ Inferencia del equipo de desarrollo | 11 | orden temporal de acciones, aproximaciones |
-| ❌ Depende de valores sin aprobar | 14 | todo lo que compara contra los criterios de un caso o contra `bp_required_checks` |
+| ⚠️ Inferencia del equipo de desarrollo | 13 | orden temporal de acciones, aproximaciones |
+| ❌ Depende de valores sin aprobar | 13 | todo lo que compara contra los criterios de un caso o contra `bp_required_checks` |
+
+Las 39 métricas están implementadas. Ninguna sobra y ninguna falta respecto al cuadro de
+origen.
 
 ## Lo que necesita decisión clínica
 
@@ -351,12 +370,9 @@ Cada métrica se explica en tres partes:
 
 1. **`min_gaze_ms`** — cuánto tiempo mirando el tórax cuenta como observación. Hoy 3 segundos.
 2. **`valid_pulse_sources`** y **`valid_breathing_sources`** — si el monitor es una vía válida.
-3. **`bp_required_checks`** — cuáles son los pasos obligatorios antes de medir la presión y
-   cómo se comprueba cada uno.
+3. **`bp_required_checks`** — cuáles son los pasos obligatorios antes de medir la presión.
 
 ### Valores por caso, en `cases.criteria`
-
-Se definen una vez por caso, en la tabla `cases`:
 
 4. **`vitals_key`** — qué respiración, presión y pulso son correctos para cada caso.
 5. **`correct_cuff`** — qué brazalete corresponde a cada caso.
@@ -365,27 +381,40 @@ Se definen una vez por caso, en la tabla `cases`:
 
 **El caso `case-02-hypertension` está registrado sin `scene3_phrases`.** Sus métricas de la
 escena 3 quedan sin evaluar hasta que se definan, y el dashboard lo muestra como caso
-incompleto. No es un error: es el estado real.
+incompleto.
+
+### Decisiones que el cuadro deja abiertas
+
+8. **Clave de calidad técnica de la imagen** — el cuadro 2 pide "decisión concordante con la
+   clave de calidad técnica" y "repeticiones justificadas", pero no dice cuál es esa clave
+   para cada caso. Hoy se apoya en el campo `programmed_defect` que envía Unity. Si el defecto
+   debe definirse por caso, tiene que vivir en `cases.criteria`.
 
 ## Lo que necesita corrección técnica
 
-1. **`Defecto detectado`** está mal nombrada. Mide si el escenario puso el defecto, no si el
-   participante lo detectó. Debería llamarse `technical_defect_present`.
-2. **`bp_required_checks`** lista pasos que no tienen evento asociado. La métrica no puede
-   contar lo que el visor no registra. Hoy la lista de configuración y la lista que el motor
-   cuenta no coinciden.
-3. **`clarification_requested`** no está en el catálogo de acciones del contrato. La métrica la
-   busca, pero Unity no la va a emitir hasta que se agregue.
-4. **`Estado reconocido`** solo comprueba que un valor no esté vacío. Es demasiado débil para
-   llamarlo reconocimiento.
+Tres cosas que el motor pide y el contrato todavía no garantiza:
+
+1. **`bp_required_checks` cuenta dos comprobaciones.** El motor mapea cada paso de la
+   configuración a una acción concreta: `drawer` a `drawer_opened` y `cuff` a `cuff_selected`.
+   Si la configuración lista pasos con otros nombres, no se cuentan. La lista de configuración
+   y el mapeo del motor tienen que coincidir.
+2. **Eventos nuevos que Unity debe emitir.** La versión anterior del motor no los necesitaba
+   porque se había inventado métricas más simples. Ahora el cuadro los exige:
+   `requirements_completed`, `capture_rejected`, `image_accepted`, `image_rejected`,
+   `image_repeat_requested`, `clarification_requested`. Están en `docs/DATA-CONTRACT.md`.
+3. **`inconclusive` y `comprehension` leen campos de contexto.** El estado real del informe y
+   cuántas instrucciones entendió el paciente vienen en `context` de dos eventos. Unity tiene
+   que poblarlos o las métricas quedan sin evaluar.
 
 ## Lo que ya está resuelto
 
 - **El caso desconocido se rechaza al ingestar.** Antes un `case_id` con un error de tipeo
-  producía una sesión con todas las métricas vacías, sin aviso. Ahora la ingesta responde
-  `400` con el identificador que no reconoce.
+  producía una sesión con todas las métricas vacías, sin aviso.
 - **Un caso incompleto ya no es silencioso.** La sesión guarda qué versión de criterios vio el
   participante, y el dashboard avisa qué le falta al caso.
 - **Los valores por caso dejaron de estar dispersos.** Antes vivían en cuatro mapas dentro de
   `study_config`, donde un caso podía estar en tres y faltar del cuarto sin que nada lo
-  señalara. Ahora son una fila por caso.
+  señalara.
+- **No quedan métricas inventadas.** La versión anterior tenía un indicador completo que el
+  cuadro no pedía y dos métricas de imagen que no correspondían. Se reemplazaron por las que
+  el cuadro sí define.

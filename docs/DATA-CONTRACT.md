@@ -146,6 +146,17 @@ Los nueve primeros corresponden a los indicadores de los cuadros de métricas. L
 que agregar una acción requiere decodificarla. Catálogo inicial derivado de la especificación
 RV; el equipo Unity debe proponer las que falten antes de implementarlas.
 
+Acciones que existen porque un cuadro de métricas las necesita:
+
+| Acción | Para qué |
+|---|---|
+| `requirements_completed` | Marca que el escenario completó los requisitos de la preparación. Es lo que separa una activación legítima de una prematura. |
+| `capture_rejected` | El participante intentó activar la adquisición sin cumplir los requisitos y el sistema no lo permitió. |
+| `image_accepted` | El participante aceptó la imagen. Contraparte de `image_rejected`. |
+| `image_rejected` | El participante rechazó la imagen por el defecto técnico. Es la decisión que mide el cuadro 2, indicador 4. |
+| `image_repeat_requested` | El participante pidió repetir la adquisición. |
+| `clarification_requested` | El participante pidió aclaración en lugar de concluir. |
+
 **Toda escena empieza con `scene_started` y termina con `scene_ended`.** Son las dos únicas
 acciones obligatorias de cada escena y de ellas se calcula su duración. Lo que dispara el
 cierre se registra en `context` (por ejemplo `{"closed_via": "consultation_closed"}`), no en
@@ -154,8 +165,8 @@ el nombre de la acción.
 | Escena | Acciones |
 |---|---|
 | `vital_signs` | `scene_started`, `gaze_chest`, `monitor_checked`, `value_recorded`, `drawer_opened`, `cuff_selected`, `cuff_placed`, `sphygmomanometer_activated`, `reading_displayed`, `wrist_touched`, `value_corrected`, `chart_finalized`, `scene_ended` |
-| `x_ray` | `scene_started`, `console_opened`, `wristband_read`, `identification_dialogue`, `study_selected`, `phrase_communicated`, `patient_confirmed`, `capture_activated`, `image_displayed`, `image_reviewed`, `scene_ended` |
-| `results_delivery` | `scene_started`, `panel_opened`, `identifiers_compared`, `report_corrected`, `phrase_classified`, `report_status_recognized`, `verbal_response`, `comprehension_asked`, `scene_ended` |
+| `x_ray` | `scene_started`, `console_opened`, `wristband_read`, `identification_dialogue`, `study_selected`, `phrase_communicated`, `patient_confirmed`, `requirements_completed`, `capture_activated`, `capture_rejected`, `image_displayed`, `image_accepted`, `image_rejected`, `image_repeat_requested`, `scene_ended` |
+| `results_delivery` | `scene_started`, `panel_opened`, `identifiers_compared`, `report_corrected`, `phrase_classified`, `report_status_recognized`, `verbal_response`, `comprehension_asked`, `clarification_requested`, `scene_ended` |
 | `outside` | `session_started`, `case_assigned`, `session_finished` |
 
 ### 4.5 `outcome`

@@ -62,48 +62,68 @@ pendiente de definir con la psicóloga. Hasta entonces, el color no opina.
 
 ## 4. Indicadores
 
-Cada indicador agrupa los eventos de un `procedure`.
+Los trece indicadores de los cuadros de `Metricas de TESIS ASETARO.pdf`, con sus treinta y
+nueve métricas. Cada fila corresponde a una fila del cuadro de origen.
 
-| Indicador | Escena | `procedure` | M1 | M2 | M3 |
-|---|---|---|---|---|---|
-| `breathing` | `vital_signs` | `breathing` | Observación completada | Concordancia con la clave | Tiempo hasta el registro |
-| `bp_preparation` | `vital_signs` | `blood_pressure` | Comprobaciones completadas | Brazalete concordante | — |
-| `bp_measurement` | `vital_signs` | `blood_pressure` | Lectura registrada | Concordancia lectura/ficha | — |
-| `pulse` | `vital_signs` | `pulse` | Revisión realizada | Concordancia mostrado/registrado | Corrección antes de confirmar |
-| `vitals_integration` | `vital_signs` | `vitals_integration` | Signos correctos de 3 | Campos omitidos | Discordancias lectura-ficha |
-| `identity_verification` | `x_ray` | `identity_verification` | Comprobaciones realizadas | Estudio seleccionado vs solicitado | Activaciones antes de completar |
-| `patient_preparation` | `x_ray` | `patient_preparation` | Instrucciones comunicadas | Confirmación del paciente | Captura antes de completar |
-| `image_capture` | `x_ray` | `image_capture` | Captura ejecutada | — | — |
-| `image_review` | `x_ray` | `image_review` | Revisión realizada | Defecto detectado | Tiempo de revisión |
-| `correspondence` | `results_delivery` | `correspondence` | Identificadores comprobados | Informe correcto | Comunicaciones antes de verificar |
-| `text_validation` | `results_delivery` | `text_validation` | Frases bien clasificadas | No respaldadas aceptadas | Correcciones antes de comunicar |
-| `inconclusive` | `results_delivery` | `inconclusive` | Reconoce el estado | Comunicaciones improcedentes | Solicitudes de aclaración |
-| `explanation` | `results_delivery` | `explanation` | Mensajes concordantes | Afirmaciones no respaldadas | Información relevante omitida |
-| `comprehension` | `results_delivery` | `comprehension` | Comprobación realizada | Malentendidos aclarados | Instrucciones comprendidas |
+**Si un indicador o una métrica no está en esos cuadros, no se calcula.** No se agregan
+métricas propias: el motor implementa lo que la tesis definió, nada más.
 
-`bp_preparation` y `bp_measurement` comparten `procedure` porque el cuadro separa preparación
-de medición, pero los eventos llegan juntos.
+### Cuadro 1 · Escena: toma de signos vitales
 
-Nombres que usa la implementación. El dashboard muestra una descripción de una línea por
-cada métrica al pasar el cursor; viven en `apps/web/src/lib/labels.ts` (`metricDescription`) y
-describen qué cuenta el número, no cómo se calcula.
+| Indicador | `procedure` | M1 | M2 | M3 |
+|---|---|---|---|---|
+| `breathing` | `breathing` | Observación completada: sí/no | Concordancia del registro con la clave del caso | Tiempo entre mostrar la respiración y registrar el dato |
+| `blood_pressure` | `blood_pressure` | Comprobaciones completadas / aplicables | Selección del brazalete concordante: sí/no | Lectura registrada frente a lectura mostrada |
+| `pulse` | `pulse` | Revisión realizada: sí/no | Concordancia entre valor mostrado y registrado | Corrección del valor antes de confirmar: sí/no |
+| `vitals_integration` | `vitals_integration` | Signos correctamente registrados / tres signos previstos | Campos omitidos | Discordancias entre lecturas y ficha final |
+
+### Cuadro 2 · Escena: toma de rayos X
+
+| Indicador | `procedure` | M1 | M2 | M3 |
+|---|---|---|---|---|
+| `identity_verification` | `identity_verification` | Comprobaciones realizadas / aplicables | Estudio seleccionado frente al solicitado | Activaciones antes de completar la verificación |
+| `patient_preparation` | `patient_preparation` | Instrucciones pertinentes comunicadas / previstas | Confirmación del paciente: sí/no | Inicio de adquisición antes de completar la preparación |
+| `acquisition_activation` | `image_capture` | Activación con requisitos completos: sí/no | Intentos de activación prematura | Tiempo desde requisitos completos hasta activación |
+| `image_review` | `image_review` | Revisión de imagen realizada: sí/no | Decisión concordante con la clave de calidad técnica | Repeticiones justificadas / repeticiones realizadas |
+
+### Cuadro 3 · Escena: entrega y validación de resultados
+
+| Indicador | `procedure` | M1 | M2 | M3 |
+|---|---|---|---|---|
+| `correspondence` | `correspondence` | Identificadores comprobados / aplicables | Selección del informe correcto: sí/no | Comunicaciones iniciadas antes de verificar |
+| `text_validation` | `text_validation` | Afirmaciones clasificadas correctamente / evaluables | Afirmaciones no respaldadas aceptadas | Correcciones realizadas antes de comunicar |
+| `explanation` | `explanation` | Mensajes concordantes / mensajes evaluables | Afirmaciones no respaldadas comunicadas | Información relevante omitida según la rúbrica |
+| `comprehension` | `comprehension` | Comprobación realizada: sí/no | Malentendidos detectados y aclarados | Instrucciones comprendidas en la respuesta del paciente / instrucciones comunicadas |
+| `inconclusive` | `inconclusive` | Reconocimiento del estado del informe: sí/no | Comunicaciones definitivas improcedentes | Solicitudes de aclaración cuando correspondía |
+
+### Nombres en el código
 
 | Indicador | M1 | M2 | M3 |
 |---|---|---|---|
 | `breathing` | `observation_completed` | `matches_key` | `time_to_record_ms` |
-| `bp_preparation` | `checks_completed_ratio` | `cuff_matches` | — |
-| `bp_measurement` | `reading_recorded` | `reading_matches_chart` | — |
+| `blood_pressure` | `checks_completed_ratio` | `cuff_matches` | `reading_matches_display` |
 | `pulse` | `review_performed` | `matches_displayed` | `corrected_before_confirm` |
 | `vitals_integration` | `correct_vitals_of_three` | `omitted_fields` | `chart_discrepancies` |
 | `identity_verification` | `checks_completed_ratio` | `study_matches_request` | `activations_before_check` |
 | `patient_preparation` | `instructions_ratio` | `patient_confirmed` | `capture_before_prep` |
-| `image_capture` | `capture_executed` | — | — |
-| `image_review` | `review_performed` | `defect_detected` | `review_duration_ms` |
+| `acquisition_activation` | `activated_with_requirements` | `premature_attempts` | `time_from_requirements_ms` |
+| `image_review` | `review_performed` | `decision_matches_quality_key` | `justified_repeats_ratio` |
 | `correspondence` | `identifiers_ratio` | `report_correct` | `communications_before_check` |
 | `text_validation` | `phrases_classified_ratio` | `unsupported_accepted` | `corrections_before_communicating` |
-| `inconclusive` | `status_recognized` | `improper_final_communications` | `clarification_requests` |
 | `explanation` | `messages_concordant_ratio` | `unsupported_claims` | `relevant_info_omitted` |
 | `comprehension` | `check_performed` | `misunderstandings_resolved` | `instructions_understood_ratio` |
+| `inconclusive` | `status_recognized` | `improper_final_communications` | `clarification_requests` |
+
+### Datos que no son métricas
+
+Algunas cosas que el visor registra se muestran en el timeline pero no se cuentan como
+métricas, porque el cuadro de origen no las pide:
+
+- Duración de cada escena, calculada desde `scene_started` y `scene_ended`.
+- Duración total de la sesión.
+- Si la imagen que se mostró tenía el defecto técnico programado.
+
+Sirven de contexto para leer los resultados, no como medida de desempeño.
 
 ## 5. Parámetros
 

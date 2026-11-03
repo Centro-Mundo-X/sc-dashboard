@@ -1,5 +1,6 @@
 import type { SessionEvent } from '@sc/shared';
 import {
+  asNumber,
   asRecord,
   caseParam,
   type CaseCriteriaValues,
@@ -108,19 +109,33 @@ export const inconclusive: IndicatorDefinition = {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const recognized = firstByAction(events, 'report_status_recognized');
-    const status = recognized?.value === null || recognized?.value === undefined ? undefined : String(recognized.value);
+    const answered = recognized?.value === null || recognized?.value === undefined
+      ? undefined
+      : String(recognized.value);
+    // The scenario states the real status on the panel; recognition means the
+    // participant's answer matches it.
+    const actual = recognized?.context?.['actual_status'];
+    const actualStatus = actual === null || actual === undefined ? undefined : String(actual);
 
-    out.m1 =
-      status === undefined ? notEvaluable('report status not recorded') : { kind: 'boolean', value: status.length > 0 };
+    if (answered === undefined) {
+      out.m1 = notEvaluable('report status not answered');
+    } else if (actualStatus === undefined) {
+      out.m1 = notEvaluable('scenario did not report the actual status');
+    } else {
+      out.m1 = { kind: 'boolean', value: answered === actualStatus };
+    }
 
     // Communicating a definitive result while the report is preliminary is the
     // improper case. Absent evidence is not evaluated.
     const improper = events.filter(
-      (e) => e.action === 'verbal_response' && e.value === 'definitive_conclusion' && status === 'preliminary',
+      (e) =>
+        e.action === 'verbal_response' &&
+        e.value === 'definitive_conclusion' &&
+        actualStatus === 'preliminary',
     ).length;
     out.m2 =
-      status === undefined
-        ? notEvaluable('report status not recorded')
+      actualStatus === undefined
+        ? notEvaluable('scenario did not report the actual status')
         : { kind: 'number', value: improper };
 
     const requests = events.filter((e) => e.action === 'clarification_requested').length;
@@ -190,10 +205,18 @@ export const comprehension: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: clarified };
     }
 
-    // Instructions are communicated in patient_preparation, not in this procedure.
+    // "Instrucciones comprendidas en la respuesta del paciente / instrucciones
+    // comunicadas": the numerator is what the patient showed understanding of,
+    // which the scenario reports on the comprehension event.
     const communicated = sessionEvents.filter((e) => e.action === 'phrase_communicated');
-    const understood = communicated.filter((e) => e.outcome !== 'omitted').length;
-    out.m3 = communicated.length > 0 ? ratio(understood, communicated.length) : notEvaluable('no instructions communicated');
+    const understoodCount = asNumber(asked?.context?.['instructions_understood']);
+    if (communicated.length === 0) {
+      out.m3 = notEvaluable('no instructions communicated');
+    } else if (understoodCount === undefined) {
+      out.m3 = notEvaluable('patient response did not report understanding');
+    } else {
+      out.m3 = ratio(understoodCount, communicated.length);
+    }
 
     return out;
   },

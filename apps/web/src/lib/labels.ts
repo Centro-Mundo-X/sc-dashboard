@@ -73,20 +73,19 @@ export const labels = {
   },
 
   indicator: {
-    breathing: 'Respiración',
-    bp_preparation: 'Preparación de la presión',
-    bp_measurement: 'Medición de la presión',
-    pulse: 'Pulso',
-    vitals_integration: 'Integración de signos',
-    identity_verification: 'Verificación de identidad',
+    breathing: 'Revisión de la respiración',
+    blood_pressure: 'Toma de presión arterial',
+    pulse: 'Revisión del pulso',
+    vitals_integration: 'Integración de los tres signos',
+    identity_verification: 'Verificación previa al examen',
     patient_preparation: 'Preparación del paciente',
-    image_capture: 'Captura de imagen',
-    image_review: 'Revisión de imagen',
-    correspondence: 'Correspondencia',
-    text_validation: 'Validación del texto',
-    inconclusive: 'Resultado no concluyente',
-    explanation: 'Explicación',
-    comprehension: 'Comprensión',
+    acquisition_activation: 'Activación de la adquisición',
+    image_review: 'Revisión de la imagen obtenida',
+    correspondence: 'Correspondencia del resultado',
+    text_validation: 'Validación del texto del caso',
+    explanation: 'Explicación al paciente',
+    comprehension: 'Comprobación de comprensión',
+    inconclusive: 'Manejo de resultado no concluyente',
   },
 
   metric: {
@@ -117,6 +116,12 @@ export const labels = {
     phrases_classified_ratio: 'Frases clasificadas',
     unsupported_accepted: 'No respaldadas aceptadas',
     corrections_before_communicating: 'Correcciones antes de comunicar',
+    reading_matches_display: 'Lectura registrada frente a la mostrada',
+    activated_with_requirements: 'Activación con requisitos completos',
+    premature_attempts: 'Intentos de activación prematura',
+    time_from_requirements_ms: 'Tiempo desde requisitos hasta activación',
+    decision_matches_quality_key: 'Decisión concordante con la calidad técnica',
+    justified_repeats_ratio: 'Repeticiones justificadas',
     status_recognized: 'Estado reconocido',
     improper_final_communications: 'Comunicaciones definitivas improcedentes',
     clarification_requests: 'Solicitudes de aclaración',
@@ -141,19 +146,18 @@ export const labels = {
  */
 export const INDICATOR_SCENE: Record<string, keyof typeof labels.scene> = {
   breathing: 'vital_signs',
-  bp_preparation: 'vital_signs',
-  bp_measurement: 'vital_signs',
+  blood_pressure: 'vital_signs',
   pulse: 'vital_signs',
   vitals_integration: 'vital_signs',
   identity_verification: 'x_ray',
   patient_preparation: 'x_ray',
-  image_capture: 'x_ray',
+  acquisition_activation: 'x_ray',
   image_review: 'x_ray',
   correspondence: 'results_delivery',
   text_validation: 'results_delivery',
-  inconclusive: 'results_delivery',
   explanation: 'results_delivery',
   comprehension: 'results_delivery',
+  inconclusive: 'results_delivery',
 };
 
 export function indicatorLabel(id: string): string {
@@ -172,80 +176,90 @@ export function metricLabel(name: string): string {
  * new metric cannot be added without a description.
  */
 export const metricDescription: Record<string, string> = {
-  // respiration
+  // Cuadro 1 · Signos vitales
   observation_completed:
-    'El participante observó la respiración el tiempo mínimo, ya sea mirando el tórax o consultando el monitor.',
+    'El participante observó la respiración el tiempo mínimo, mirando el tórax o consultando el monitor.',
   matches_key:
     'La frecuencia respiratoria registrada coincide con la del caso.',
   time_to_record_ms:
-    'Tiempo entre la primera observación de la respiración y el registro del valor.',
+    'Tiempo entre que se mostró la respiración y el registro del valor.',
 
-  // blood pressure
   checks_completed_ratio:
     'Proporción de comprobaciones previas completadas sobre las que exige el caso.',
-  cuff_matches: 'El brazalete elegido es el que corresponde al caso.',
-  reading_recorded: 'Se registró un valor de presión arterial en la ficha.',
-  reading_matches_chart:
-    'El valor registrado coincide con el que mostró el tensiómetro.',
+  cuff_matches: 'El brazalete elegido es el que corresponde al paciente.',
+  reading_matches_display:
+    'El valor de presión registrado coincide con el que mostró el tensiómetro.',
 
-  // pulse
   review_performed:
     'El participante revisó el pulso por alguna de las vías válidas: muñeca o monitor.',
   matches_displayed:
-    'El valor registrado coincide con el que mostró el monitor.',
+    'El valor de pulso registrado coincide con el que mostró el monitor.',
   corrected_before_confirm:
     'Hubo una corrección del valor antes de confirmarlo. Corregir es conducta válida.',
 
-  // vitals integration
   correct_vitals_of_three:
     'Cantidad de signos, de los tres, que coinciden con la clave del caso.',
   omitted_fields: 'Campos de la ficha que quedaron sin completar.',
-  chart_discrepancies: 'Valores de la ficha que difieren de la clave del caso.',
+  chart_discrepancies: 'Valores de la ficha final que difieren de la clave del caso.',
 
-  // x-ray
+  // Cuadro 2 · Rayos X
   study_matches_request:
     'El estudio seleccionado coincide con el que la solicitud pedía.',
   activations_before_check:
-    'La captura se activó antes de terminar la verificación de identidad.',
+    'La adquisición se activó antes de terminar la verificación de identidad.',
+
   instructions_ratio:
     'Proporción de instrucciones al paciente que se comunicaron sobre las previstas.',
   patient_confirmed: 'El paciente confirmó haber entendido y ejecutado la preparación.',
   capture_before_prep:
-    'La captura se activó antes de que el paciente confirmara la preparación.',
-  capture_executed: 'Se activó la captura de la imagen.',
-  defect_detected: 'La imagen mostrada tenía un defecto técnico programado.',
-  review_duration_ms: 'Tiempo entre que se mostró la imagen y se dio por revisada.',
+    'La adquisición se inició antes de que el paciente confirmara la preparación.',
 
-  // results delivery
+  activated_with_requirements:
+    'La adquisición se activó con todos los requisitos previos completados.',
+  premature_attempts:
+    'Intentos de activar la adquisición sin cumplir los requisitos.',
+  time_from_requirements_ms:
+    'Tiempo entre completar los requisitos y activar la adquisición.',
+
+  decision_matches_quality_key:
+    'La decisión de aceptar o rechazar la imagen coincide con la clave de calidad técnica del caso.',
+  justified_repeats_ratio:
+    'Proporción de repeticiones solicitadas que estaban justificadas por un defecto real.',
+
+  // Cuadro 3 · Entrega de resultados
   identifiers_ratio:
     'Proporción de identificadores comprobados entre ficha, imagen e informe.',
-  report_correct: 'El informe abierto corresponde al paciente y al estudio.',
+  report_correct: 'El informe seleccionado corresponde al paciente y al estudio.',
   communications_before_check:
     'Se habló con el paciente antes de verificar los identificadores.',
+
   phrases_classified_ratio:
-    'Proporción de frases clasificadas sobre las que había que clasificar.',
+    'Proporción de afirmaciones clasificadas correctamente sobre las evaluables.',
   unsupported_accepted:
-    'Frases que el informe no respalda y se aceptaron como respaldadas.',
+    'Afirmaciones que el informe no respalda y se aceptaron como respaldadas.',
   corrections_before_communicating:
     'Hubo correcciones antes de comunicar al paciente.',
-  status_recognized:
-    'Se reconoció si el informe era definitivo o preliminar.',
-  improper_final_communications:
-    'Se comunicó una conclusión definitiva cuando el informe era preliminar.',
-  clarification_requests:
-    'Veces que se pidió una aclaración en lugar de concluir.',
+
   messages_concordant_ratio:
-    'Proporción de mensajes al paciente respaldados por el informe.',
+    'Proporción de mensajes al paciente que el informe respalda.',
   unsupported_claims:
     'Afirmaciones comunicadas que el informe no respalda.',
   relevant_info_omitted:
     'Elementos relevantes del informe que no se comunicaron.',
+
   check_performed:
     'Se preguntó al paciente qué había entendido.',
   misunderstandings_resolved:
-    'Hubo un malentendido y se aclaró antes de cerrar.',
+    'Hubo un malentendido en la respuesta del paciente y se aclaró.',
   instructions_understood_ratio:
-    'Proporción de instrucciones que el paciente comprendió.',
+    'Proporción de instrucciones que el paciente comprendió sobre las comunicadas.',
+
+  status_recognized:
+    'La respuesta del participante sobre el estado del informe coincide con el estado real.',
+  improper_final_communications:
+    'Comunicaciones que presentan como definitivo un resultado que no lo era.',
+  clarification_requests:
+    'Veces que se pidió una aclaración en lugar de concluir.',
 };
 
 export function descriptionOf(metric: string): string | undefined {

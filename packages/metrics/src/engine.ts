@@ -1,6 +1,11 @@
 import type { Session, SessionEvent } from '@sc/shared';
-import { breathing, bpMeasurement, bpPreparation, pulse, vitalsIntegration } from './indicators-vitals.ts';
-import { identityVerification, imageCapture, imageReview, patientPreparation } from './indicators-xray.ts';
+import { bloodPressure, breathing, pulse, vitalsIntegration } from './indicators-vitals.ts';
+import {
+  acquisitionActivation,
+  identityVerification,
+  imageReview,
+  patientPreparation,
+} from './indicators-xray.ts';
 import { comprehension, correspondence, explanation, inconclusive, textValidation } from './indicators-results.ts';
 import {
   eventsForProcedure,
@@ -13,22 +18,30 @@ import {
   type StudyConfigValues,
 } from './types.ts';
 
-/** Every indicator the engine knows, in documentation order. */
+/**
+ * The thirteen indicators of the thesis metric tables, in the order they appear
+ * in `Metricas de TESIS ASETARO.pdf`.
+ *
+ * This list mirrors the source document exactly: one entry per indicator, three
+ * metrics each. If an indicator is not in those tables, it does not belong here.
+ */
 export const INDICATORS: readonly IndicatorDefinition[] = [
+  // Cuadro 1 · Toma de signos vitales
   breathing,
-  bpPreparation,
-  bpMeasurement,
+  bloodPressure,
   pulse,
   vitalsIntegration,
+  // Cuadro 2 · Toma de rayos X
   identityVerification,
   patientPreparation,
-  imageCapture,
+  acquisitionActivation,
   imageReview,
+  // Cuadro 3 · Entrega y validación de resultados
   correspondence,
   textValidation,
-  inconclusive,
   explanation,
   comprehension,
+  inconclusive,
 ];
 
 export interface EvaluateOptions {

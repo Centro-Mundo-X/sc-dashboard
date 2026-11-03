@@ -28,7 +28,7 @@ function metricOf(results: ReturnType<typeof evaluateSession>, indicator: string
 describe('evaluateSession', () => {
   it('evaluates every indicator', () => {
     const result = evaluateSession({ session: fixtureSession(), config: STUDY_CONFIG, caseCriteria: CASE_CRITERIA });
-    assert.equal(result.results.length, INDICATORS.length);
+    assert.equal(result.results.length, 13);
   });
 
   it('reads the breathing observation from the chest gaze', () => {
@@ -52,7 +52,7 @@ describe('evaluateSession', () => {
 
   it('matches the cuff against the case key', () => {
     const result = evaluateSession({ session: fixtureSession(), config: STUDY_CONFIG, caseCriteria: CASE_CRITERIA });
-    assert.deepEqual(metricOf(result, 'bp_preparation', 'cuff_matches'), { kind: 'boolean', value: true });
+    assert.deepEqual(metricOf(result, 'blood_pressure', 'cuff_matches'), { kind: 'boolean', value: true });
   });
 
   it('flags a wrong cuff', () => {
@@ -61,7 +61,7 @@ describe('evaluateSession', () => {
       event.action === 'cuff_selected' ? { ...event, value: 'small' } : event,
     );
     const result = evaluateSession({ session, config: STUDY_CONFIG, caseCriteria: CASE_CRITERIA });
-    assert.deepEqual(metricOf(result, 'bp_preparation', 'cuff_matches'), { kind: 'boolean', value: false });
+    assert.deepEqual(metricOf(result, 'blood_pressure', 'cuff_matches'), { kind: 'boolean', value: false });
   });
 
   it('reports no pulse correction when none happened', () => {
@@ -139,7 +139,7 @@ describe('evaluateSession', () => {
       config: STUDY_CONFIG,
       caseCriteria: {},
     });
-    const cuff = metricOf(result, 'bp_preparation', 'cuff_matches');
+    const cuff = metricOf(result, 'blood_pressure', 'cuff_matches');
     assert.equal(cuff.kind, 'not_evaluable');
     const phrases = metricOf(result, 'text_validation', 'phrases_classified_ratio');
     assert.equal(phrases.kind, 'not_evaluable');

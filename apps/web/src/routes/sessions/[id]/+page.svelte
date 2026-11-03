@@ -48,7 +48,28 @@
     reason = data.session.incompleteReason ?? '';
   });
 
-  /** Indicators grouped by indicator id, in metric row order. */
+  /**
+   * Indicator order, following the metric tables in `Metricas de TESIS`
+   * ASETARO`. The database returns rows alphabetically; a clinical reader
+   * expects the order of the source document.
+   */
+  const INDICATOR_ORDER = [
+    'breathing',
+    'blood_pressure',
+    'pulse',
+    'vitals_integration',
+    'identity_verification',
+    'patient_preparation',
+    'acquisition_activation',
+    'image_review',
+    'correspondence',
+    'text_validation',
+    'explanation',
+    'comprehension',
+    'inconclusive',
+  ] as const;
+
+  /** Metrics grouped by indicator, sorted by that order. */
   const byIndicator = $derived.by(() => {
     const map = new Map<string, MetricRow[]>();
     for (const metric of data.metrics) {
@@ -56,7 +77,11 @@
       if (bucket) bucket.push(metric);
       else map.set(metric.indicator, [metric]);
     }
-    return map;
+    const rank = (id: string) => {
+      const index = INDICATOR_ORDER.indexOf(id as (typeof INDICATOR_ORDER)[number]);
+      return index === -1 ? INDICATOR_ORDER.length : index;
+    };
+    return [...map.entries()].sort(([a], [b]) => rank(a) - rank(b));
   });
 
   const SCENE_ORDER = ['vital_signs', 'x_ray', 'results_delivery', 'outside'] as const;
@@ -93,7 +118,7 @@
   });
 
   const evaluated = $derived(
-    [...byIndicator.values()].filter((ms) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
+    byIndicator.filter(([, ms]) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
   );
 
   function display(metric: MetricRow): string {
@@ -164,7 +189,7 @@
   <div>
     <dt class="label">Indicadores evaluados</dt>
     <dd class="mt-0.5">
-      <span class="font-mono">{evaluated}/{byIndicator.size}</span>
+      <span class="font-mono">{evaluated}/{byIndicator.length}</span>
     </dd>
   </div>
 </dl>

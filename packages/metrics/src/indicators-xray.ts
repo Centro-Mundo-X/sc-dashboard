@@ -6,7 +6,6 @@ import {
   isCompleted,
   notEvaluable,
   ratio,
-  type IndicatorContext,
   type IndicatorDefinition,
   type MetricValue,
 } from './types.ts';
@@ -19,12 +18,28 @@ function elapsedMs(from: string | undefined, to: string | undefined): number | u
   return Math.max(0, end - start);
 }
 
+/** Value of an event's `value` field as a string, or undefined. */
+function valueAsString(event: SessionEvent | undefined): string | undefined {
+  if (!event || event.value === null || event.value === undefined) return undefined;
+  return String(event.value);
+}
+
+// ---------------------------------------------------------------------------
+// Cuadro 2 · Escena: toma de rayos X
+// ---------------------------------------------------------------------------
+
+/**
+ * 1. Verificación previa al examen
+ * M1 Comprobaciones realizadas / aplicables
+ * M2 Estudio seleccionado frente al solicitado
+ * M3 Activaciones antes de completar la verificación
+ */
 export const identityVerification: IndicatorDefinition = {
   id: 'identity_verification',
   procedure: 'identity_verification',
   scene: 'x_ray',
   names: { m1: 'checks_completed_ratio', m2: 'study_matches_request', m3: 'activations_before_check' },
-  evaluate: ({ events, sessionEvents, config, caseCriteria }) => {
+  evaluate: ({ events, sessionEvents, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const consoleOpened = firstByAction(events, 'console_opened');
@@ -32,13 +47,12 @@ export const identityVerification: IndicatorDefinition = {
     const dialogue = firstByAction(events, 'identification_dialogue');
     const study = firstByAction(events, 'study_selected');
 
-    const checks = [consoleOpened, wristband, dialogue].filter(isCompleted).length;
-    out.m1 = ratio(checks, 3);
+    out.m1 = ratio([consoleOpened, wristband, dialogue].filter(isCompleted).length, 3);
 
+    // The request demands a specific study; the participant picks one.
     const requested = caseParam(caseCriteria, 'requested_study');
-    const chosen = study?.value === null || study?.value === undefined ? undefined : String(study.value);
-
-    if (typeof requested !== 'string') {
+    const chosen = valueAsString(study);
+    if (requested === undefined) {
       out.m2 = notEvaluable('case has no requested_study');
     } else if (chosen === undefined) {
       out.m2 = notEvaluable('no study selected');
@@ -46,8 +60,7 @@ export const identityVerification: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: chosen === requested };
     }
 
-    // Captures taken before the identity check finished. The spec records this
-    // without blocking the participant.
+    // Activations that happened before the identity check finished.
     const capture = firstByAction(sessionEvents, 'capture_activated');
     const checkDoneAt = [wristband, dialogue].filter(isCompleted).at(-1)?.occurred_at;
     if (!capture || !checkDoneAt) {
@@ -60,6 +73,12 @@ export const identityVerification: IndicatorDefinition = {
   },
 };
 
+/**
+ * 2. Preparación del paciente
+ * M1 Instrucciones pertinentes comunicadas / previstas
+ * M2 Confirmación del paciente: sí/no
+ * M3 Inicio de adquisición antes de completar la preparación
+ */
 export const patientPreparation: IndicatorDefinition = {
   id: 'patient_preparation',
   procedure: 'patient_preparation',
@@ -69,10 +88,11 @@ export const patientPreparation: IndicatorDefinition = {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const phrases = events.filter((e) => e.action === 'phrase_communicated');
-    const communicated = phrases.filter(isCompleted).length;
-    const total = phrases.length;
+    out.m1 =
+      phrases.length > 0
+        ? ratio(phrases.filter(isCompleted).length, phrases.length)
+        : notEvaluable('no instructions expected');
 
-    out.m1 = total > 0 ? ratio(communicated, total) : notEvaluable('no instructions expected');
     out.m2 = { kind: 'boolean', value: isCompleted(firstByAction(events, 'patient_confirmed')) };
 
     const capture = firstByAction(sessionEvents, 'capture_activated');
@@ -87,38 +107,90 @@ export const patientPreparation: IndicatorDefinition = {
   },
 };
 
-export const imageCapture: IndicatorDefinition = {
-  id: 'image_capture',
+/**
+ * 3. Activación de la adquisición
+ * M1 Activación con requisitos completos: sí/no
+ * M2 Intentos de activación prematura
+ * M3 Tiempo desde requisitos completos hasta activación
+ */
+export const acquisitionActivation: IndicatorDefinition = {
+  id: 'acquisition_activation',
   procedure: 'image_capture',
   scene: 'x_ray',
-  names: { m1: 'capture_executed' },
-  evaluate: ({ events }) => ({
-    m1: { kind: 'boolean', value: isCompleted(firstByAction(events, 'capture_activated')) },
-  }),
+  names: { m1: 'activated_with_requirements', m2: 'premature_attempts', m3: 'time_from_requirements_ms' },
+  evaluate: ({ events }) => {
+    const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
+
+    const requirements = firstByAction(events, 'requirements_completed');
+    const activated = firstByAction(events, 'capture_activated');
+    const rejected = events.filter((e) => e.action === 'capture_rejected');
+
+    if (!activated) {
+      out.m1 = notEvaluable('no activation attempted');
+    } else if (requirements && activated.occurred_at < requirements.occurred_at) {
+      out.m1 = { kind: 'boolean', value: false };
+    } else {
+      out.m1 = { kind: 'boolean', value: true };
+    }
+
+    // Attempts the system refused because a requirement was still pending.
+    out.m2 = { kind: 'number', value: rejected.length };
+
+    const elapsed = elapsedMs(requirements?.occurred_at, activated?.occurred_at);
+    out.m3 =
+      elapsed === undefined
+        ? notEvaluable('missing requirements or activation event')
+        : { kind: 'number', value: elapsed };
+
+    return out;
+  },
 };
 
+/**
+ * 4. Revisión de la imagen obtenida
+ * M1 Revisión de imagen realizada: sí/no
+ * M2 Decisión concordante con la clave de calidad técnica
+ * M3 Repeticiones justificadas / repeticiones realizadas
+ */
 export const imageReview: IndicatorDefinition = {
   id: 'image_review',
   procedure: 'image_review',
   scene: 'x_ray',
-  names: { m1: 'review_performed', m2: 'defect_detected', m3: 'review_duration_ms' },
+  names: { m1: 'review_performed', m2: 'decision_matches_quality_key', m3: 'justified_repeats_ratio' },
   evaluate: ({ events }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const displayed = firstByAction(events, 'image_displayed');
-    const reviewed = firstByAction(events, 'image_reviewed');
+    const accepted = firstByAction(events, 'image_accepted');
+    const rejectedImage = firstByAction(events, 'image_rejected');
+    const repeatsRequested = events.filter((e) => e.action === 'image_repeat_requested');
 
-    out.m1 = { kind: 'boolean', value: isCompleted(reviewed) };
+    out.m1 = { kind: 'boolean', value: isCompleted(accepted) || isCompleted(rejectedImage) };
 
-    // The programmed defect is a property of the scene, not of the participant.
-    const programmed = displayed?.context?.['programmed_defect'];
-    out.m2 =
-      programmed === undefined
-        ? notEvaluable('no defect flag recorded')
-        : { kind: 'boolean', value: programmed === true };
+    // The case says whether the image carries a technical defect. Accepting a
+    // defective image, or rejecting a clean one, is a discordant decision.
+    const defectPresent = displayed?.context?.['programmed_defect'];
+    const decision = isCompleted(rejectedImage) ? 'rejected' : isCompleted(accepted) ? 'accepted' : undefined;
 
-    const duration = elapsedMs(displayed?.occurred_at, reviewed?.occurred_at);
-    out.m3 = duration === undefined ? notEvaluable('missing review window') : { kind: 'number', value: duration };
+    if (defectPresent === undefined) {
+      out.m2 = notEvaluable('scenario did not report image quality');
+    } else if (decision === undefined) {
+      out.m2 = notEvaluable('no decision recorded');
+    } else {
+      const expected = defectPresent === true ? 'rejected' : 'accepted';
+      out.m2 = { kind: 'boolean', value: decision === expected };
+    }
+
+    // A repeat is justified when the image had the defect. Without repeats
+    // there is nothing to judge, so the metric reports not_evaluable.
+    if (repeatsRequested.length === 0) {
+      out.m3 = notEvaluable('no repeats requested');
+    } else if (defectPresent === undefined) {
+      out.m3 = notEvaluable('scenario did not report image quality');
+    } else {
+      const justified = repeatsRequested.filter(() => defectPresent === true).length;
+      out.m3 = ratio(justified, repeatsRequested.length);
+    }
 
     return out;
   },

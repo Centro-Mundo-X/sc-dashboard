@@ -23,10 +23,20 @@ function elapsedMs(from: string | undefined, to: string | undefined): number | u
 
 /** Value of an event's `value` field as a string, or undefined. */
 function valueAsString(event: SessionEvent | undefined): string | undefined {
-  if (!event || event.value === null) return undefined;
+  if (!event || event.value === null || event.value === undefined) return undefined;
   return String(event.value);
 }
 
+// ---------------------------------------------------------------------------
+// Cuadro 1 · Escena: toma de signos vitales
+// ---------------------------------------------------------------------------
+
+/**
+ * 1. Revisión de la respiración
+ * M1 Observación completada: sí/no
+ * M2 Concordancia del registro con la clave del caso
+ * M3 Tiempo entre mostrar la respiración y registrar el dato
+ */
 export const breathing: IndicatorDefinition = {
   id: 'breathing',
   procedure: 'breathing',
@@ -42,62 +52,70 @@ export const breathing: IndicatorDefinition = {
     const monitor = firstByAction(events, 'monitor_checked');
     const recorded = firstByAction(events, 'value_recorded');
 
-    // Either a long enough chest gaze or a monitor check counts, if both are valid.
     const gazeDuration = asNumber(gaze?.context?.['gaze_duration_ms']);
     const gazeCounts = gazeDuration !== undefined && minGaze !== undefined && gazeDuration >= minGaze;
-    const monitorCounts = isCompleted(monitor) && (validSources === undefined || validSources.includes('monitor'));
+    const monitorCounts =
+      isCompleted(monitor) && (validSources === undefined || validSources.includes('monitor'));
 
-    if (minGaze === undefined) {
-      out.m1 = notEvaluable('min_gaze_ms not configured');
-    } else {
-      out.m1 = { kind: 'boolean', value: gazeCounts || monitorCounts };
-    }
+    out.m1 =
+      minGaze === undefined
+        ? notEvaluable('min_gaze_ms not configured')
+        : { kind: 'boolean', value: gazeCounts || monitorCounts };
 
     const expected = caseParam(caseCriteria, 'vitals_key');
-    const expectedRate =
-      typeof expected === 'object' && expected !== null
-        ? asNumber((expected as Record<string, unknown>)['respiratory_rate'])
-        : undefined;
     const recordedRate = asNumber(recorded?.value);
 
-    if (expectedRate === undefined) {
+    if (!expected) {
       out.m2 = notEvaluable('case has no vitals_key');
     } else if (recordedRate === undefined) {
       out.m2 = notEvaluable('no respiratory rate recorded');
     } else {
-      out.m2 = { kind: 'boolean', value: recordedRate === expectedRate };
+      out.m2 = { kind: 'boolean', value: recordedRate === expected.respiratory_rate };
     }
 
     const firstSource = gaze ?? monitor;
     const elapsed = elapsedMs(firstSource?.occurred_at, recorded?.occurred_at);
-    out.m3 = elapsed === undefined ? notEvaluable('missing observation or record event') : { kind: 'number', value: elapsed };
+    out.m3 =
+      elapsed === undefined
+        ? notEvaluable('missing observation or record event')
+        : { kind: 'number', value: elapsed };
 
     return out;
   },
 };
 
-export const bpPreparation: IndicatorDefinition = {
-  id: 'bp_preparation',
+/**
+ * 2. Toma de presión arterial
+ * M1 Comprobaciones completadas / aplicables
+ * M2 Selección del brazalete concordante: sí/no
+ * M3 Lectura registrada frente a lectura mostrada
+ */
+export const bloodPressure: IndicatorDefinition = {
+  id: 'blood_pressure',
   procedure: 'blood_pressure',
   scene: 'vital_signs',
-  names: { m1: 'checks_completed_ratio', m2: 'cuff_matches' },
+  names: { m1: 'checks_completed_ratio', m2: 'cuff_matches', m3: 'reading_matches_display' },
   evaluate: ({ events, config, caseCriteria }) => {
-    const out: Partial<Record<'m1' | 'm2', MetricValue>> = {};
+    const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
+    // M1: each required check maps to the action that proves it. The list comes
+    // from configuration, the mapping lives here because it is a contract detail.
     const required = asStringArray(config['bp_required_checks']);
-    const drawer = firstByAction(events, 'drawer_opened');
-    const cuffSelected = firstByAction(events, 'cuff_selected');
+    const checked = {
+      drawer: isCompleted(firstByAction(events, 'drawer_opened')),
+      cuff: isCompleted(firstByAction(events, 'cuff_selected')),
+    };
+    if (!required || required.length === 0) {
+      out.m1 = notEvaluable('bp_required_checks not configured');
+    } else {
+      const done = required.filter((check) => checked[check as keyof typeof checked] === true).length;
+      out.m1 = ratio(done, required.length);
+    }
 
-    // Each required check maps to the action that proves it. Unknown checks are
-    // not counted as failures: they are simply not evaluable.
-    const checksDone = [isCompleted(drawer) ? 'drawer' : undefined, isCompleted(cuffSelected) ? 'cuff' : undefined].filter(
-      (v): v is string => v !== undefined,
-    );
-    out.m1 = required && required.length > 0 ? ratio(checksDone.length, required.length) : notEvaluable('bp_required_checks not configured');
-
+    // M2: the cuff chosen against the one the case expects.
     const expectedCuff = caseParam(caseCriteria, 'correct_cuff');
-    const chosen = valueAsString(cuffSelected);
-    if (typeof expectedCuff !== 'string') {
+    const chosen = valueAsString(firstByAction(events, 'cuff_selected'));
+    if (expectedCuff === undefined) {
       out.m2 = notEvaluable('case has no correct_cuff');
     } else if (chosen === undefined) {
       out.m2 = notEvaluable('no cuff selected');
@@ -105,39 +123,29 @@ export const bpPreparation: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: chosen === expectedCuff };
     }
 
-    return out;
-  },
-};
-
-export const bpMeasurement: IndicatorDefinition = {
-  id: 'bp_measurement',
-  procedure: 'blood_pressure',
-  scene: 'vital_signs',
-  names: { m1: 'reading_recorded', m2: 'reading_matches_chart' },
-  evaluate: ({ events }) => {
-    const out: Partial<Record<'m1' | 'm2', MetricValue>> = {};
-
-    const displayed = firstByAction(events, 'reading_displayed');
-    const recorded = events
-      .filter((e) => e.action === 'value_recorded' && e.object === 'field_bp')
-      .at(-1);
-
-    out.m1 = { kind: 'boolean', value: recorded !== undefined };
-
-    const shown = valueAsString(displayed);
-    const written = valueAsString(recorded);
-    if (shown === undefined) {
-      out.m2 = notEvaluable('no blood pressure displayed');
+    // M3: what the participant wrote against what the device displayed.
+    const displayed = valueAsString(firstByAction(events, 'reading_displayed'));
+    const written = valueAsString(
+      events.filter((e) => e.action === 'value_recorded' && e.object === 'field_bp').at(-1),
+    );
+    if (displayed === undefined) {
+      out.m3 = notEvaluable('no reading displayed');
     } else if (written === undefined) {
-      out.m2 = notEvaluable('no blood pressure recorded');
+      out.m3 = notEvaluable('no reading recorded');
     } else {
-      out.m2 = { kind: 'boolean', value: shown === written };
+      out.m3 = { kind: 'boolean', value: displayed === written };
     }
 
     return out;
   },
 };
 
+/**
+ * 3. Revisión del pulso
+ * M1 Revisión realizada: sí/no
+ * M2 Concordancia entre valor mostrado y registrado
+ * M3 Corrección del valor antes de confirmar: sí/no
+ */
 export const pulse: IndicatorDefinition = {
   id: 'pulse',
   procedure: 'pulse',
@@ -150,12 +158,16 @@ export const pulse: IndicatorDefinition = {
     const wrist = firstByAction(events, 'wrist_touched');
     const monitor = firstByAction(events, 'monitor_checked');
 
-    const wristCounts = isCompleted(wrist) && (validSources === undefined || validSources.includes('wrist'));
-    const monitorCounts = isCompleted(monitor) && (validSources === undefined || validSources.includes('monitor'));
+    const wristCounts =
+      isCompleted(wrist) && (validSources === undefined || validSources.includes('wrist'));
+    const monitorCounts =
+      isCompleted(monitor) && (validSources === undefined || validSources.includes('monitor'));
 
     out.m1 = { kind: 'boolean', value: wristCounts || monitorCounts };
 
-    const recorded = events.filter((e) => e.action === 'value_recorded' && e.object === 'field_pulse').at(-1);
+    const recorded = events
+      .filter((e) => e.action === 'value_recorded' && e.object === 'field_pulse')
+      .at(-1);
     const written = asNumber(recorded?.value);
     const displayed = asNumber(monitor?.value);
 
@@ -165,29 +177,36 @@ export const pulse: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: displayed === written };
     }
 
-    const corrected = events.some((e) => e.outcome === 'corrected');
-    out.m3 = { kind: 'boolean', value: corrected };
+    out.m3 = { kind: 'boolean', value: events.some((e) => e.outcome === 'corrected') };
 
     return out;
   },
 };
 
+/**
+ * 4. Integración y registro de los tres signos
+ * M1 Signos correctamente registrados / tres signos previstos
+ * M2 Campos omitidos
+ * M3 Discordancias entre lecturas y ficha final
+ */
 export const vitalsIntegration: IndicatorDefinition = {
   id: 'vitals_integration',
   procedure: 'vitals_integration',
   scene: 'vital_signs',
   names: { m1: 'correct_vitals_of_three', m2: 'omitted_fields', m3: 'chart_discrepancies' },
-  evaluate: ({ sessionEvents, config, caseCriteria }) => {
+  evaluate: ({ sessionEvents, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
-    const expected = caseParam(caseCriteria, 'vitals_key') as Record<string, unknown> | undefined;
+    const expected = caseParam(caseCriteria, 'vitals_key');
     // The three values are recorded inside their own procedures, so this
     // indicator reads the whole session rather than its own slice.
-    const recorded = sessionEvents.filter((e) => e.action === 'value_recorded' && e.object?.startsWith('field_'));
+    const recorded = sessionEvents.filter(
+      (e) => e.action === 'value_recorded' && e.object?.startsWith('field_'),
+    );
     const byField = new Map(recorded.map((e) => [e.object ?? '', e]));
 
     const rr = asNumber(byField.get('field_rr')?.value);
-    const bp = byField.get('field_bp')?.value;
+    const bp = valueAsString(byField.get('field_bp'));
     const pulseValue = asNumber(byField.get('field_pulse')?.value);
 
     if (!expected) {
@@ -195,16 +214,20 @@ export const vitalsIntegration: IndicatorDefinition = {
       out.m3 = notEvaluable('case has no vitals_key');
     } else {
       let correct = 0;
-      if (rr !== undefined && rr === asNumber(expected['respiratory_rate'])) correct++;
-      if (bp !== undefined && String(bp) === String(expected['blood_pressure'])) correct++;
-      if (pulseValue !== undefined && pulseValue === asNumber(expected['pulse'])) correct++;
-
+      let discrepancies = 0;
+      if (rr !== undefined) {
+        if (rr === expected.respiratory_rate) correct++;
+        else discrepancies++;
+      }
+      if (bp !== undefined) {
+        if (bp === expected.blood_pressure) correct++;
+        else discrepancies++;
+      }
+      if (pulseValue !== undefined) {
+        if (pulseValue === expected.pulse) correct++;
+        else discrepancies++;
+      }
       out.m1 = ratio(correct, 3);
-
-      const discrepancies =
-        (rr !== undefined && rr !== asNumber(expected['respiratory_rate']) ? 1 : 0) +
-        (bp !== undefined && String(bp) !== String(expected['blood_pressure']) ? 1 : 0) +
-        (pulseValue !== undefined && pulseValue !== asNumber(expected['pulse']) ? 1 : 0);
       out.m3 = { kind: 'number', value: discrepancies };
     }
 

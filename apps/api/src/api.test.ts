@@ -67,7 +67,7 @@ describe('POST /api/sessions/ingest', () => {
     const body = response.json();
     assert.equal(body.status, 'accepted');
     assert.equal(body.duplicate, false);
-    assert.equal(body.events_received, 43);
+    assert.equal(body.events_received, 48);
   });
 
   it('is idempotent on replay', async () => {
