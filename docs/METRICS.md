@@ -107,25 +107,43 @@ describen qué cuenta el número, no cómo se calcula.
 
 ## 5. Parámetros
 
-Los valores que el motor necesita no van en el código. Viven en `study_config`.
+Los valores que el motor necesita viven en dos lugares, según a qué apliquen.
+
+### 5.1 Globales, en `study_config`
+
+Aplican a toda sesión, sea cual sea el caso.
 
 | Clave | Tipo | Qué define |
 |---|---|---|
 | `min_gaze_ms` | entero | Tiempo mínimo de mirada al tórax que cuenta como observación |
 | `valid_pulse_sources` | array | Vías válidas del pulso: `wrist`, `monitor` o ambas |
 | `valid_breathing_sources` | array | Vías válidas de la respiración: `chest`, `monitor` o ambas |
-| `cuff_by_case` | objeto | Brazalete correcto por `case_id` |
 | `bp_required_checks` | array | Comprobaciones exigidas antes de medir la presión |
-| `requested_study_by_case` | objeto | Estudio de rayos X solicitado por `case_id` |
-| `scene3_phrases` | objeto | Frases de la escena 3 y cuáles no están respaldadas |
-| `vitals_key_by_case` | objeto | Respiración, presión y pulso esperados por `case_id` |
 
-Los valores iniciales son provisionales y quedan con `approved = false` hasta que la
-psicóloga los confirme. Mientras no estén aprobados, el dashboard muestra un aviso y marca
-las métricas afectadas, para que nadie confunda un número de arranque con un criterio validado.
+### 5.2 Por caso, en `cases.criteria`
 
-Si falta un parámetro, el motor devuelve `not_evaluable` en los indicadores que lo necesiten.
-No inventa un valor por defecto: un default silencioso produce métricas falsas que nadie nota.
+Pertenecen a un caso concreto y se definen una vez por caso en la tabla `cases`.
+
+| Campo | Tipo | Qué define |
+|---|---|---|
+| `vitals_key` | objeto | Respiración, presión y pulso esperados |
+| `correct_cuff` | texto | Brazalete que corresponde al paciente |
+| `requested_study` | texto | Estudio de rayos X que pide la solicitud |
+| `scene3_phrases` | array | Frases de la escena 3 y cuáles no están respaldadas |
+
+Separarlos importa: los globales son criterios del estudio, los por caso son datos del
+material clínico. Un caso nuevo agrega una fila, no edita cuatro mapas.
+
+### 5.3 Aprobación
+
+Ambos conjuntos son provisionales y quedan con `approved = false` hasta que la psicóloga los
+confirme. Mientras no estén aprobados, el dashboard muestra un aviso para que nadie confunda
+un número de arranque con un criterio validado.
+
+Un caso puede registrarse incompleto, sin todos sus criterios. Cuando falta uno, el motor
+devuelve `not_evaluable` en los indicadores que lo necesiten y el dashboard avisa qué caso
+está incompleto y qué le falta. No inventa un valor por defecto: un default silencioso produce
+métricas falsas que nadie nota.
 
 ## 6. Recálculo
 

@@ -9,9 +9,19 @@ Cada métrica se explica en tres partes:
 3. **Contra qué se compara** — el valor de referencia. Cuando ese valor es un parámetro
    configurable, se indica su valor actual y si está aprobado.
 
-> **Estado de los valores de referencia.** Los ocho parámetros de `study_config` están
-> cargados con valores de arranque y marcados como **no aprobados**. El dashboard muestra un
-> aviso mientras sea así. Ninguno de esos valores fue definido por el equipo clínico.
+> **Dónde viven los valores de referencia.** Se dividen en dos lugares:
+>
+> - **`study_config`** — cuatro parámetros que aplican a *toda* sesión, sin importar el caso:
+>   `min_gaze_ms`, `valid_pulse_sources`, `valid_breathing_sources`, `bp_required_checks`.
+> - **`cases.criteria`** — los valores que pertenecen a *un caso concreto*: sus signos
+>   esperados, su brazalete, su estudio de rayos X y sus frases de la escena 3.
+>
+> Ambos están marcados como **no aprobados**. El dashboard muestra un aviso por cada uno.
+> Ninguno de esos valores fue definido por el equipo clínico.
+>
+> Un caso puede registrarse sin todos sus criterios. Cuando falta uno, las métricas que lo
+> necesitan quedan sin evaluar y el dashboard avisa qué caso está incompleto, en lugar de
+> producir números vacíos sin explicación.
 
 ---
 
@@ -30,7 +40,7 @@ Cada métrica se explica en tres partes:
 **Coincide con la clave** (nombre técnico: `matches_key`)
 - *Pregunta*: ¿La frecuencia respiratoria que registró es la correcta para este caso?
 - *Dato*: el valor del evento `value_recorded` con `object: "field_rr"`.
-- *Compara contra*: `vitals_key_by_case["case-01-chest-pain"].respiratory_rate` = **18**.
+- *Compara contra*: `cases.criteria.vitals_key.respiratory_rate` del caso `case-01-chest-pain` = **18**.
 - *Aprobado*: ❌ el valor 18 lo puso el equipo de desarrollo como ejemplo.
 
 **Tiempo hasta el registro** — `time_to_record_ms`
@@ -57,7 +67,7 @@ Cada métrica se explica en tres partes:
 **Brazalete correcto** — `cuff_matches`
 - *Pregunta*: ¿Eligió el brazalete que corresponde?
 - *Dato*: el valor de `cuff_selected` (`small`, `adult` o `large_adult`).
-- *Compara contra*: `cuff_by_case["case-01-chest-pain"]` = **`adult`**.
+- *Compara contra*: `cases.criteria.correct_cuff` del caso `case-01-chest-pain` = **`adult`**.
 - *Aprobado*: ❌ el brazalete correcto por caso no está definido por el equipo clínico.
 
 ---
@@ -106,7 +116,7 @@ Cada métrica se explica en tres partes:
 **Signos correctos de tres** — `correct_vitals_of_three`
 - *Pregunta*: De los tres signos, ¿cuántos coinciden con los esperados?
 - *Dato*: los tres `value_recorded` de la ficha (`field_rr`, `field_bp`, `field_pulse`).
-- *Compara contra*: `vitals_key_by_case["case-01-chest-pain"]` =
+- *Compara contra*: `cases.criteria.vitals_key` del caso `case-01-chest-pain` =
   **FR 18 · PA `120/80` · pulso 76**.
 - *Aprobado*: ❌ los tres valores son de ejemplo.
 
@@ -119,7 +129,7 @@ Cada métrica se explica en tres partes:
 **Discordancias con la ficha** — `chart_discrepancies`
 - *Pregunta*: ¿Cuántos valores anotados difieren de los esperados?
 - *Dato*: los tres valores registrados.
-- *Compara contra*: la misma tabla `vitals_key_by_case` del caso.
+- *Compara contra*: el mismo `cases.criteria.vitals_key` del caso.
 - *Aprobado*: ❌ depende de los valores de ejemplo.
 
 ---
@@ -139,7 +149,7 @@ Cada métrica se explica en tres partes:
 **Estudio coincide con lo solicitado** — `study_matches_request`
 - *Pregunta*: ¿Eligió el estudio que la solicitud pedía?
 - *Dato*: el valor de `study_selected`.
-- *Compara contra*: `requested_study_by_case["case-01-chest-pain"]` = **`chest_pa`**.
+- *Compara contra*: `cases.criteria.requested_study` del caso `case-01-chest-pain` = **`chest_pa`**.
 - *Aprobado*: ❌ el estudio solicitado por caso no está definido clínicamente.
 
 **Activaciones antes de verificar** — `activations_before_check`
@@ -237,14 +247,14 @@ Cada métrica se explica en tres partes:
 **Frases clasificadas** — `phrases_classified_ratio`
 - *Pregunta*: ¿Clasificó las frases que le presentaron?
 - *Dato*: eventos `phrase_classified`.
-- *Compara contra*: **3 frases**, tomadas de `scene3_phrases["case-01-chest-pain"]`.
+- *Compara contra*: **3 frases**, tomadas de `cases.criteria.scene3_phrases` del caso.
 - *Aprobado*: ❌ las frases las inventó el equipo de desarrollo. Están en la configuración y se
   pueden cambiar, pero no son las frases reales del estudio.
 
 **No respaldadas aceptadas** — `unsupported_accepted`
 - *Pregunta*: ¿Aceptó como verdadera alguna frase que el informe no respalda?
 - *Dato*: los `phrase_classified` con valor `supported`.
-- *Compara contra*: las frases marcadas `supported: false` en `scene3_phrases`. Hoy es **una
+- *Compara contra*: las frases marcadas `supported: false` en `cases.criteria.scene3_phrases`. Hoy es **una
   sola**: *"El estudio confirma el diagnóstico definitivo."*
 - *Aprobado*: ❌ qué frases son falsas lo define el material del caso, que hoy es de ejemplo.
 
@@ -286,7 +296,7 @@ Cada métrica se explica en tres partes:
 **Mensajes concordantes** — `messages_concordant_ratio`
 - *Pregunta*: ¿Lo que le dijo al paciente está respaldado por el informe?
 - *Dato*: los `verbal_response` y su `phrase_id`.
-- *Compara contra*: las frases marcadas `supported: true` en `scene3_phrases` — hoy **dos** de
+- *Compara contra*: las frases marcadas `supported: true` en `cases.criteria.scene3_phrases` — hoy **dos** de
   tres.
 - *Aprobado*: ❌ depende de las frases de ejemplo.
 
@@ -333,25 +343,49 @@ Cada métrica se explica en tres partes:
 |---|---|---|
 | ✅ No requiere criterio clínico | 13 | tiempos, conteos de presencia, coincidencias contra lo que mostró el propio equipo en pantalla |
 | ⚠️ Inferencia del equipo de desarrollo | 11 | orden temporal de acciones, aproximaciones |
-| ❌ Depende de valores sin aprobar | 14 | todo lo que compara contra `vitals_key_by_case`, `cuff_by_case`, `scene3_phrases` o `bp_required_checks` |
+| ❌ Depende de valores sin aprobar | 14 | todo lo que compara contra los criterios de un caso o contra `bp_required_checks` |
 
 ## Lo que necesita decisión clínica
 
-1. **`min_gaze_ms`**: cuánto tiempo mirando el tórax cuenta como observación. Hoy 3 segundos.
-2. **`bp_required_checks`**: cuáles son los pasos obligatorios antes de medir la presión y
+### Parámetros globales, en `study_config`
+
+1. **`min_gaze_ms`** — cuánto tiempo mirando el tórax cuenta como observación. Hoy 3 segundos.
+2. **`valid_pulse_sources`** y **`valid_breathing_sources`** — si el monitor es una vía válida.
+3. **`bp_required_checks`** — cuáles son los pasos obligatorios antes de medir la presión y
    cómo se comprueba cada uno.
-3. **`vitals_key_by_case`**: qué valores son correctos para cada caso.
-4. **`cuff_by_case`**: qué brazalete corresponde a cada caso.
-5. **`valid_pulse_sources`** y **`valid_breathing_sources`**: si el monitor es una vía válida.
-6. **`requested_study_by_case`**: qué estudio se pide en cada caso.
-7. **`scene3_phrases`**: las frases reales y cuáles no están respaldadas.
+
+### Valores por caso, en `cases.criteria`
+
+Se definen una vez por caso, en la tabla `cases`:
+
+4. **`vitals_key`** — qué respiración, presión y pulso son correctos para cada caso.
+5. **`correct_cuff`** — qué brazalete corresponde a cada caso.
+6. **`requested_study`** — qué estudio se pide en cada caso.
+7. **`scene3_phrases`** — las frases reales de la escena 3 y cuáles no están respaldadas.
+
+**El caso `case-02-hypertension` está registrado sin `scene3_phrases`.** Sus métricas de la
+escena 3 quedan sin evaluar hasta que se definan, y el dashboard lo muestra como caso
+incompleto. No es un error: es el estado real.
 
 ## Lo que necesita corrección técnica
 
 1. **`Defecto detectado`** está mal nombrada. Mide si el escenario puso el defecto, no si el
-   participante lo detectó.
+   participante lo detectó. Debería llamarse `technical_defect_present`.
 2. **`bp_required_checks`** lista pasos que no tienen evento asociado. La métrica no puede
-   contar lo que el visor no registra.
-3. **`clarification_requested`** no está en el catálogo de acciones del contrato.
+   contar lo que el visor no registra. Hoy la lista de configuración y la lista que el motor
+   cuenta no coinciden.
+3. **`clarification_requested`** no está en el catálogo de acciones del contrato. La métrica la
+   busca, pero Unity no la va a emitir hasta que se agregue.
 4. **`Estado reconocido`** solo comprueba que un valor no esté vacío. Es demasiado débil para
    llamarlo reconocimiento.
+
+## Lo que ya está resuelto
+
+- **El caso desconocido se rechaza al ingestar.** Antes un `case_id` con un error de tipeo
+  producía una sesión con todas las métricas vacías, sin aviso. Ahora la ingesta responde
+  `400` con el identificador que no reconoce.
+- **Un caso incompleto ya no es silencioso.** La sesión guarda qué versión de criterios vio el
+  participante, y el dashboard avisa qué le falta al caso.
+- **Los valores por caso dejaron de estar dispersos.** Antes vivían en cuatro mapas dentro de
+  `study_config`, donde un caso podía estar en tres y faltar del cuarto sin que nada lo
+  señalara. Ahora son una fila por caso.
