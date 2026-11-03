@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "atlassian": {
+      "url": "https://mcp.atlassian.com/v2/mcp",
+      "description": "Atlassian MCP (Jira, Confluence, Bitbucket, Jira Service Management, Projects, Goals, Loom) via Teamwork Graph"
+    }
+  }
+}

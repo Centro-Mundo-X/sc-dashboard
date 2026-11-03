@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+.svelte-kit/
+*.tsbuildinfo
+
+# Database and participant data (never commit)
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+data/
+backups/
+
+# Source PDFs (kept locally, not distributed)
+docs/*.pdf
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs, temp
+*.log
+logs/
+tmp/
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
