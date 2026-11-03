@@ -33,3 +33,6 @@ tmp/
 # Editor
 .vscode/
 .idea/
+
+# Local agent config
+.pi/
