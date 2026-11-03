@@ -30,7 +30,6 @@
 <div class="group/metric relative flex min-w-0 items-baseline justify-between gap-4">
   <dt
     class="text-soft min-w-0 cursor-help truncate text-[0.75rem] decoration-dotted underline-offset-2 group-hover/metric:underline"
-    title={description ?? ''}
   >
     {metricLabel(metric.metric)}
   </dt>
@@ -38,17 +37,21 @@
     class="text-right font-mono text-[0.75rem] font-medium {metric.valueType === 'not_evaluable'
       ? 'text-faint'
       : 'text-(--text)'}"
-    title={metric.notEvaluableReason ?? ''}
   >
     {display}
   </dd>
 
-  {#if description}
+  {#if description || metric.notEvaluableReason}
     <p
       role="tooltip"
       class="pointer-events-none absolute top-full left-0 z-20 mt-1 hidden w-max max-w-md border border-(--hairline) bg-(--panel) px-2.5 py-1.5 text-[0.6875rem] leading-snug font-normal text-(--text) shadow-sm group-hover/metric:block"
     >
-      {description}
+      {#if description}{description}{/if}
+      {#if metric.notEvaluableReason}
+        <span class="text-faint mt-1 block">
+          {labels.session.notEvaluable}: {metric.notEvaluableReason}
+        </span>
+      {/if}
     </p>
   {/if}
 </div>
