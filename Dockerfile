@@ -1,5 +1,3 @@
-# Build and runtime in one image: the API and the dashboard share the SQLite file
-# and the process tree, so splitting them adds nothing.
 FROM node:22-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -26,4 +24,6 @@ ENV NODE_ENV=production
 COPY --from=build /app /app
 RUN mkdir -p /app/data
 EXPOSE 3000
+
+# The API owns ingestion and the dashboard is served from the same process.
 CMD ["node", "--experimental-strip-types", "apps/api/src/main.ts"]

@@ -23,6 +23,7 @@ docs/*.pdf
 .env
 .env.*
 !.env.example
+!.env.development
 
 # Logs, temp
 *.log
