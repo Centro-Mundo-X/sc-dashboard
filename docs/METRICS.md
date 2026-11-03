@@ -84,7 +84,9 @@ Cada indicador agrupa los eventos de un `procedure`.
 `bp_preparation` y `bp_measurement` comparten `procedure` porque el cuadro separa preparación
 de medición, pero los eventos llegan juntos.
 
-Nombres que usa la implementación:
+Nombres que usa la implementación. El dashboard muestra una descripción de una línea por
+cada métrica al pasar el cursor; viven en `apps/web/src/lib/labels.ts` (`metricDescription`) y
+describen qué cuenta el número, no cómo se calcula.
 
 | Indicador | M1 | M2 | M3 |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import { labels, indicatorLabel, metricLabel, INDICATOR_SCENE } from '#lib/labels';
+  import { labels, indicatorLabel, metricLabel, descriptionOf, INDICATOR_SCENE } from '#lib/labels';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
@@ -228,8 +228,13 @@
             <h4 class="text-soft text-[0.75rem] font-medium">{indicatorLabel(indicator)}</h4>
             <dl class="grid min-w-0 gap-0.5">
               {#each metrics as metric (metric.id)}
-                <div class="flex min-w-0 items-baseline justify-between gap-4">
-                  <dt class="text-soft min-w-0 truncate text-[0.75rem]">{metricLabel(metric.metric)}</dt>
+                <div class="group/metric relative flex min-w-0 items-baseline justify-between gap-4">
+                  <dt
+                    class="text-soft min-w-0 cursor-help truncate text-[0.75rem] decoration-dotted underline-offset-2 group-hover/metric:underline"
+                    title={descriptionOf(metric.metric) ?? ''}
+                  >
+                    {metricLabel(metric.metric)}
+                  </dt>
                   <dd
                     class="text-right font-mono text-[0.75rem] font-medium {metric.valueType ===
                     'not_evaluable'
@@ -239,6 +244,15 @@
                   >
                     {display(metric)}
                   </dd>
+
+                  {#if descriptionOf(metric.metric)}
+                    <p
+                      role="tooltip"
+                      class="pointer-events-none absolute top-full left-0 z-20 mt-1 hidden w-max max-w-md border border-(--hairline) bg-(--panel) px-2.5 py-1.5 text-[0.6875rem] leading-snug font-normal text-(--text) shadow-sm group-hover/metric:block"
+                    >
+                      {descriptionOf(metric.metric)}
+                    </p>
+                  {/if}
                 </div>
               {/each}
             </dl>
