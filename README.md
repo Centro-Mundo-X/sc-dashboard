@@ -8,7 +8,7 @@ recibe esas sesiones, calcula las métricas clínicas y las muestra en un dashbo
 
 > El visor es la fuente de verdad. El backend es un consumidor que tolera fallos.
 
-## Arrancar para probar
+## Arrancar
 
 ```bash
 pnpm install
@@ -16,16 +16,16 @@ pnpm seed     # crea data/, la base, el usuario y carga una sesión de ejemplo
 pnpm dev      # levanta el API y el dashboard
 ```
 
-Abrí **http://localhost:5173** y entrá con `psicologa` / `clave-de-prueba`.
+Abrir **http://localhost:5173** e ingresar con `psicologa` / `clave-de-prueba`.
 
-`pnpm seed` es idempotente: si lo corrés dos veces no duplica nada.
+`pnpm seed` es idempotente: ejecutarlo dos veces no duplica nada.
 
-Los valores de desarrollo viven en `.env.development`, que sí se versiona porque no
-contiene secretos reales.
+Los valores de desarrollo viven en `.env.development`, que se versiona porque no contiene
+secretos reales.
 
 ## Probar la ingesta
 
-Con `pnpm dev` corriendo:
+Con `pnpm dev` en ejecución:
 
 ```bash
 curl -X POST localhost:3000/api/sessions/ingest \
@@ -55,7 +55,7 @@ Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
 | `pnpm typecheck` | TypeScript en todo el workspace |
 | `pnpm create-user <user> <pass>` | Crea un usuario del dashboard |
 
-## Por qué está separado en paquetes
+## Paquetes
 
 ```
 packages/shared   ──┐
