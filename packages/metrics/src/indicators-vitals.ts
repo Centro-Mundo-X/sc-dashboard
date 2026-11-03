@@ -28,14 +28,14 @@ function valueAsString(event: SessionEvent | undefined): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Cuadro 1 · Escena: toma de signos vitales
+// Table 1 · Scene: vital signs
 // ---------------------------------------------------------------------------
 
 /**
- * 1. Revisión de la respiración
- * M1 Observación completada: sí/no
- * M2 Concordancia del registro con la clave del caso
- * M3 Tiempo entre mostrar la respiración y registrar el dato
+ * 1. Breathing review
+ * M1 Observation completed: yes/no
+ * M2 Agreement of the record with the case key
+ * M3 Time between showing the breathing and recording the value
  */
 export const breathing: IndicatorDefinition = {
   id: 'breathing',
@@ -85,9 +85,9 @@ export const breathing: IndicatorDefinition = {
 };
 
 /**
- * 2. Toma de presión arterial
+ * 2. Blood pressure measurement
  * M1 Comprobaciones completadas / aplicables
- * M2 Selección del brazalete concordante: sí/no
+ * M2 Agreeing cuff selection: yes/no
  * M3 Lectura registrada frente a lectura mostrada
  */
 export const bloodPressure: IndicatorDefinition = {
@@ -141,10 +141,10 @@ export const bloodPressure: IndicatorDefinition = {
 };
 
 /**
- * 3. Revisión del pulso
- * M1 Revisión realizada: sí/no
- * M2 Concordancia entre valor mostrado y registrado
- * M3 Corrección del valor antes de confirmar: sí/no
+ * 3. Pulse review
+ * M1 Review performed: yes/no
+ * M2 Agreement between the displayed and recorded value
+ * M3 Correction of the value before confirming: yes/no
  */
 export const pulse: IndicatorDefinition = {
   id: 'pulse',
@@ -184,10 +184,10 @@ export const pulse: IndicatorDefinition = {
 };
 
 /**
- * 4. Integración y registro de los tres signos
+ * 4. Integration and recording of the three signs
  * M1 Signos correctamente registrados / tres signos previstos
  * M2 Campos omitidos
- * M3 Discordancias entre lecturas y ficha final
+ * M3 Discrepancies between readings and the final chart
  */
 export const vitalsIntegration: IndicatorDefinition = {
   id: 'vitals_integration',

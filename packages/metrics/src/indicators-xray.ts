@@ -25,14 +25,14 @@ function valueAsString(event: SessionEvent | undefined): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Cuadro 2 · Escena: toma de rayos X
+// Table 2 · Scene: X-ray
 // ---------------------------------------------------------------------------
 
 /**
- * 1. Verificación previa al examen
+ * 1. Verification before the exam
  * M1 Comprobaciones realizadas / aplicables
- * M2 Estudio seleccionado frente al solicitado
- * M3 Activaciones antes de completar la verificación
+ * M2 Selected study against the requested one
+ * M3 Activations before completing the verification
  */
 export const identityVerification: IndicatorDefinition = {
   id: 'identity_verification',
@@ -74,10 +74,10 @@ export const identityVerification: IndicatorDefinition = {
 };
 
 /**
- * 2. Preparación del paciente
+ * 2. Patient preparation
  * M1 Instrucciones pertinentes comunicadas / previstas
- * M2 Confirmación del paciente: sí/no
- * M3 Inicio de adquisición antes de completar la preparación
+ * M2 Patient confirmation: yes/no
+ * M3 Acquisition start before completing the preparation
  */
 export const patientPreparation: IndicatorDefinition = {
   id: 'patient_preparation',
@@ -108,10 +108,10 @@ export const patientPreparation: IndicatorDefinition = {
 };
 
 /**
- * 3. Activación de la adquisición
- * M1 Activación con requisitos completos: sí/no
- * M2 Intentos de activación prematura
- * M3 Tiempo desde requisitos completos hasta activación
+ * 3. Acquisition activation
+ * M1 Activation with requirements complete: yes/no
+ * M2 Premature activation attempts
+ * M3 Time from requirements complete to activation
  */
 export const acquisitionActivation: IndicatorDefinition = {
   id: 'acquisition_activation',
@@ -147,9 +147,9 @@ export const acquisitionActivation: IndicatorDefinition = {
 };
 
 /**
- * 4. Revisión de la imagen obtenida
- * M1 Revisión de imagen realizada: sí/no
- * M2 Decisión concordante con la clave de calidad técnica
+ * 4. Review of the acquired image
+ * M1 Image review performed: yes/no
+ * M2 Decision agreeing with the technical quality key
  * M3 Repeticiones justificadas / repeticiones realizadas
  */
 export const imageReview: IndicatorDefinition = {

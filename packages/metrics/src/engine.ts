@@ -26,17 +26,17 @@ import {
  * metrics each. If an indicator is not in those tables, it does not belong here.
  */
 export const INDICATORS: readonly IndicatorDefinition[] = [
-  // Cuadro 1 · Toma de signos vitales
+  // Table 1 · Vital signs
   breathing,
   bloodPressure,
   pulse,
   vitalsIntegration,
-  // Cuadro 2 · Toma de rayos X
+  // Table 2 · X-ray
   identityVerification,
   patientPreparation,
   acquisitionActivation,
   imageReview,
-  // Cuadro 3 · Entrega y validación de resultados
+  // Table 3 · Delivery and validation of results
   correspondence,
   textValidation,
   explanation,

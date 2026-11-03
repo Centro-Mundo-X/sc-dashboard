@@ -176,7 +176,7 @@ export function metricLabel(name: string): string {
  * new metric cannot be added without a description.
  */
 export const metricDescription: Record<string, string> = {
-  // Cuadro 1 · Signos vitales
+  // Table 1 · Vital signs
   observation_completed:
     'El participante observó la respiración el tiempo mínimo, mirando el tórax o consultando el monitor.',
   matches_key:
@@ -202,7 +202,7 @@ export const metricDescription: Record<string, string> = {
   omitted_fields: 'Campos de la ficha que quedaron sin completar.',
   chart_discrepancies: 'Valores de la ficha final que difieren de la clave del caso.',
 
-  // Cuadro 2 · Rayos X
+  // Table 2 · X-ray
   study_matches_request:
     'El estudio seleccionado coincide con el que la solicitud pedía.',
   activations_before_check:
@@ -226,7 +226,7 @@ export const metricDescription: Record<string, string> = {
   justified_repeats_ratio:
     'Proporción de repeticiones solicitadas que estaban justificadas por un defecto real.',
 
-  // Cuadro 3 · Entrega de resultados
+  // Table 3 · Results delivery
   identifiers_ratio:
     'Proporción de identificadores comprobados entre ficha, imagen e informe.',
   report_correct: 'El informe seleccionado corresponde al paciente y al estudio.',

@@ -205,9 +205,9 @@ export const comprehension: IndicatorDefinition = {
       out.m2 = { kind: 'boolean', value: clarified };
     }
 
-    // "Instrucciones comprendidas en la respuesta del paciente / instrucciones
-    // comunicadas": the numerator is what the patient showed understanding of,
-    // which the scenario reports on the comprehension event.
+    // "Instructions understood in the patient's answer / instructions
+    // communicated": the numerator is what the patient showed understanding
+    // of, which the scenario reports on the comprehension event.
     const communicated = sessionEvents.filter((e) => e.action === 'phrase_communicated');
     const understoodCount = asNumber(asked?.context?.['instructions_understood']);
     if (communicated.length === 0) {
