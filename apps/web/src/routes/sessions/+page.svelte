@@ -82,7 +82,9 @@
           <td class="text-soft px-2 py-2">
             {labels.phase[session.phase as keyof typeof labels.phase] ?? session.phase}
           </td>
-          <td class="text-soft px-2 py-2 font-mono text-[0.75rem]">{session.caseId}</td>
+          <td class="text-soft px-2 py-2">
+            {session.caseLabel ?? session.caseId}
+          </td>
           <td class="px-2 py-2">
             <span
               class="inline-flex items-center gap-1.5 text-[0.75rem] font-medium {session.status ===

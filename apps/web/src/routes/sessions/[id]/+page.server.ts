@@ -1,4 +1,6 @@
-import { events as eventsTable, metricResults, sessions, studyConfig } from '@sc/db';
+import type { CaseCriteria } from '@sc/shared';
+import { missingCriteria } from '@sc/shared';
+import { events as eventsTable, findCase, metricResults, sessions, studyConfig } from '@sc/db';
 import { asc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getDb } from '#lib/server/db.ts';
@@ -32,11 +34,17 @@ export function load({ params }: { params: { id: string } }) {
     .all()
     .map((row: { key: string }) => row.key);
 
+  const caseRow = findCase(db, session.caseId);
+  const missing = missingCriteria((caseRow?.criteria ?? null) as CaseCriteria | null);
+
   return {
     session,
     events: timeline,
     metrics,
     configApproved: pendingKeys.length === 0,
     pendingKeys,
+    caseLabel: caseRow?.label ?? null,
+    caseMissing: missing,
+    caseApproved: caseRow?.approved ?? false,
   };
 }

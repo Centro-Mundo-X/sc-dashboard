@@ -1,5 +1,5 @@
 import type { Db } from '@sc/db';
-import { events, invalidEvents, metricResults, participants, sessions } from '@sc/db';
+import { criteriaFor, events, findCase, invalidEvents, metricResults, participants, sessions } from '@sc/db';
 import { evaluateSession } from '@sc/metrics';
 import { parseSessionJsonl, SCENES, type Session } from '@sc/shared';
 import { eq } from 'drizzle-orm';
@@ -26,7 +26,13 @@ function sessionStatus(session: Session): 'complete' | 'incomplete' {
  * rather than rejecting it, because a session is a real observation that cost a
  * participant's time.
  */
-export function ingestSession(db: Db, text: string, config: Record<string, unknown>, configVersion: number, configApproved: boolean): IngestResult {
+export function ingestSession(
+  db: Db,
+  text: string,
+  config: Record<string, unknown>,
+  configVersion: number,
+  configApproved: boolean,
+): IngestResult {
   const parsed = parseSessionJsonl(text);
 
   if (!parsed.ok) {
@@ -42,6 +48,20 @@ export function ingestSession(db: Db, text: string, config: Record<string, unkno
 
   const { session, invalidEvents: rejectedEvents } = parsed;
   const header = session.header;
+
+  // A case the backend cannot interpret would produce a session whose metrics
+  // are all not_evaluable. Reject it now, while the headset can still retry.
+  const knownCase = findCase(db, header.case_id);
+  if (!knownCase) {
+    return {
+      clientId: header.client_id,
+      status: 'rejected',
+      duplicate: false,
+      eventsReceived: session.events.length,
+      invalidEvents: rejectedEvents.length,
+      error: `unknown case_id "${header.case_id}"`,
+    };
+  }
 
   const existing = db
     .select({ id: sessions.id })
@@ -73,6 +93,7 @@ export function ingestSession(db: Db, text: string, config: Record<string, unkno
         participantCode: header.participant_code,
         phase: header.phase,
         caseId: header.case_id,
+        caseVersion: knownCase.version,
         status,
         incompleteReason,
         startedAt: header.started_at,
@@ -120,7 +141,11 @@ export function ingestSession(db: Db, text: string, config: Record<string, unkno
         .run();
     }
 
-    const evaluation = evaluateSession({ session, config });
+    const evaluation = evaluateSession({
+      session,
+      config,
+      caseCriteria: criteriaFor(db, header.case_id) as never,
+    });
     const rows = evaluation.results.flatMap((result) =>
       result.metrics.map((metric) => ({
         sessionId: inserted.id,

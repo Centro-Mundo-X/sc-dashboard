@@ -1,8 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import session from '@fastify/session';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { loadStudyConfig, openDatabase, seedStudyConfig, type Db } from '@sc/db';
+import { loadStudyConfig, openDatabase, runMigrations, seedCases, seedStudyConfig, type Db } from '@sc/db';
 import { hashToken, requireDeviceToken, requireUser } from './auth.ts';
 import { ingestSession } from './ingest.ts';
 import { registerSessionRoutes } from './routes-sessions.ts';
@@ -36,8 +35,9 @@ export async function buildServer(options: ServerOptions): Promise<BuiltServer> 
 
   // Schema must exist before anything reads it, including the study config
   // loaded further down.
-  migrate(db, { migrationsFolder: options.migrationsFolder });
+  runMigrations(db, options.migrationsFolder);
   seedStudyConfig(db);
+  seedCases(db);
 
   const app = Fastify({ logger: options.logger ?? true, bodyLimit: MAX_INGEST_BYTES });
 

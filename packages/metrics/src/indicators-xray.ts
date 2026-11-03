@@ -24,7 +24,7 @@ export const identityVerification: IndicatorDefinition = {
   procedure: 'identity_verification',
   scene: 'x_ray',
   names: { m1: 'checks_completed_ratio', m2: 'study_matches_request', m3: 'activations_before_check' },
-  evaluate: ({ events, sessionEvents, config, caseId }) => {
+  evaluate: ({ events, sessionEvents, config, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const consoleOpened = firstByAction(events, 'console_opened');
@@ -35,11 +35,11 @@ export const identityVerification: IndicatorDefinition = {
     const checks = [consoleOpened, wristband, dialogue].filter(isCompleted).length;
     out.m1 = ratio(checks, 3);
 
-    const requested = caseParam(config, 'requested_study_by_case', caseId);
+    const requested = caseParam(caseCriteria, 'requested_study');
     const chosen = study?.value === null || study?.value === undefined ? undefined : String(study.value);
 
     if (typeof requested !== 'string') {
-      out.m2 = notEvaluable(`no requested study for case ${caseId}`);
+      out.m2 = notEvaluable('case has no requested_study');
     } else if (chosen === undefined) {
       out.m2 = notEvaluable('no study selected');
     } else {

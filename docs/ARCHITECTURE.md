@@ -113,12 +113,14 @@ con unit tests puros y puede reusarse si algún día el visor necesita calcular 
 | Ingesta de sesiones VR | Cuestionarios (OIT-OMS y otros) |
 | Cálculo de M1/M2/M3 por sesión | Comparativas pre/post y agregados |
 | Dashboard de sesiones y métricas | Análisis estadístico |
-| Login de usuarios internos | Administración del catálogo de casos |
+| Login de usuarios internos | Edición del catálogo desde la interfaz |
+| Registro de casos para interpretar el `case_id` | Decidir qué caso ve cada participante |
 | | Export de datos |
 
-El catálogo de casos clínicos no se administra acá. Unity decide qué caso asigna y lo informa
-en la cabecera de sesión con `case_id`. El backend lo guarda como contexto y no lo valida
-contra ningún catálogo propio.
+Unity decide qué caso ve cada participante y lo informa en la cabecera de sesión con
+`case_id`. El backend mantiene la tabla `cases` únicamente para poder interpretar ese
+identificador: sin ella no sabría contra qué comparar. Un `case_id` que no esté en el catálogo
+se rechaza al ingestar, para que un error de tipeo se vea en el momento y no al analizar.
 
 El dashboard **es** la herramienta de análisis. No hay export por ahora.
 
@@ -128,24 +130,26 @@ Se adopta sesiones múltiples por participante desde el inicio. Si el estudio co
 pretest y postest, el modelo ya lo soporta. Si es una sola medición, `phase` queda en `single`.
 
 ```
-participants 1───N sessions 1───N events
-                      │
-                      └──1 metric_results
+cases 1───N sessions 1───N events
+                 │
+                 └──1 metric_results
+participants 1───N sessions
 users
 study_config
 ```
 
 | Tabla | Contenido |
 |---|---|
+| `cases` | El catálogo de casos clínicos. Una fila por caso, con su `label` legible, `version` y `criteria` (los valores esperados). |
 | `participants` | Código anónimo `P01`, sin nombre. El mapeo código-persona queda fuera del sistema, en poder de la psicóloga. |
-| `sessions` | Una ejecución. UUIDv7 en `client_id`. Estado de completitud y `case_id` como texto, sin clave foránea. |
+| `sessions` | Una ejecución. UUIDv7 en `client_id`. Estado de completitud, `case_id` como clave foránea a `cases` y `case_version` con la versión de criterios que vio el participante. |
 | `events` | Unidad atómica con marca de tiempo. Append-only. |
 | `invalid_events` | Líneas que no validaron, con motivo y contenido crudo. |
 | `metric_results` | Métricas calculadas. Derivadas y recalculables. |
 | `users` | Quién entra al dashboard. |
 | `study_config` | Parámetros clínicos y su estado de aprobación. |
 
-No hay tabla de casos clínicos ni de cuestionarios.
+No hay tabla de cuestionarios.
 
 ### Integridad
 

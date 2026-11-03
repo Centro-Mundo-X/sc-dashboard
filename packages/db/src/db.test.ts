@@ -3,11 +3,12 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { runMigrations } from './migrations-runner.ts';
 import { eq } from 'drizzle-orm';
 import { openDatabase } from './client.ts';
 import { loadStudyConfig, seedStudyConfig } from './config-repo.ts';
-import { participants, sessions, studyConfig } from './schema.ts';
+import { findCase, listCases, seedCases } from './case-repo.ts';
+import { cases, participants, sessions, studyConfig } from './schema.ts';
 
 const dir = mkdtempSync(join(tmpdir(), 'sc-db-'));
 const dbPath = join(dir, 'test.sqlite');
@@ -19,8 +20,9 @@ function migratedDb() {
 }
 
 before(() => {
-  migrate(migratedDb(), { migrationsFolder });
+  runMigrations(migratedDb(), migrationsFolder);
   seedStudyConfig(migratedDb());
+  seedCases(migratedDb());
 });
 
 after(() => rmSync(dir, { recursive: true, force: true }));
@@ -31,9 +33,10 @@ describe('study config', () => {
     seedStudyConfig(db);
     const snapshot = loadStudyConfig(db);
 
-    assert.equal(Object.keys(snapshot.values).length, 8);
+    // Only params that apply to every case live here; case values are on the case.
+    assert.equal(Object.keys(snapshot.values).length, 4);
     assert.equal(snapshot.approved, false);
-    assert.equal(snapshot.pendingKeys.length, 8);
+    assert.equal(snapshot.pendingKeys.length, 4);
     assert.equal(snapshot.values['min_gaze_ms'], 3000);
   });
 
@@ -43,7 +46,7 @@ describe('study config', () => {
     seedStudyConfig(db);
 
     const rows = db.select().from(studyConfig).all();
-    assert.equal(rows.length, 8);
+    assert.equal(rows.length, 4);
     assert.equal(rows.find((r) => r.key === 'min_gaze_ms')?.approved, true);
   });
 
@@ -72,5 +75,50 @@ describe('sessions', () => {
     };
     db.insert(sessions).values(row).run();
     assert.throws(() => db.insert(sessions).values(row).run());
+  });
+});
+
+describe('cases', () => {
+  it('seeds the case catalog', () => {
+    const db = migratedDb();
+    const all = listCases(db);
+    assert.equal(all.length, 2);
+    assert.equal(all[0]?.id, 'case-01-chest-pain');
+    assert.equal(all[0]?.label, 'Dolor torácico');
+  });
+
+  it('returns null for an unknown case', () => {
+    assert.equal(findCase(migratedDb(), 'caso-99'), null);
+  });
+
+  it('lets a case exist without criteria', () => {
+    const db = migratedDb();
+    db.insert(cases)
+      .values({ id: 'case-99-empty', label: 'Sin definir', version: 1, criteria: null, approved: false })
+      .run();
+    const row = findCase(db, 'case-99-empty');
+    assert.equal(row?.criteria, null);
+  });
+
+  it('refuses a session whose case is not in the catalog', () => {
+    const db = migratedDb();
+    db.insert(participants).values({ code: 'P02' }).onConflictDoNothing().run();
+    assert.throws(() =>
+      db
+        .insert(sessions)
+        .values({
+          clientId: '0192f3a4-5b6c-7d8e-9f01-234567899999',
+          participantCode: 'P02',
+          phase: 'single',
+          caseId: 'caso-99',
+          status: 'complete',
+          startedAt: '2026-11-04T14:32:10.000Z',
+          appVersion: '0.9.3',
+          deviceModel: 'Meta Quest 3',
+          deviceOsVersion: 'Horizon OS 74',
+          contractVersion: '1.0',
+        })
+        .run(),
+    );
   });
 });

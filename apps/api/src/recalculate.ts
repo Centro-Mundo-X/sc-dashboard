@@ -1,5 +1,5 @@
 import type { Db } from '@sc/db';
-import { events, metricResults, sessions } from '@sc/db';
+import { criteriaFor, events, metricResults, sessions } from '@sc/db';
 import { evaluateSession } from '@sc/metrics';
 import { eq } from 'drizzle-orm';
 import type { SessionEvent, SessionHeader } from '@sc/shared';
@@ -61,6 +61,7 @@ export function recalculateSession(
   const evaluation = evaluateSession({
     session: { header, events: parsedEvents },
     config,
+    caseCriteria: criteriaFor(db, session.caseId) as never,
   });
 
   const rows = evaluation.results.flatMap((result) =>

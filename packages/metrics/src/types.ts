@@ -39,9 +39,23 @@ export interface IndicatorContext {
    * procedures, e.g. knowing when the capture fired while judging preparation.
    */
   sessionEvents: SessionEvent[];
+  /** Params that apply to every case: gaze threshold, valid sources, checks. */
   config: StudyConfigValues;
   caseId: string;
+  /**
+   * Expected values for this case. Missing pieces mean the metric cannot be
+   * evaluated; they are never replaced by a default.
+   */
+  caseCriteria: CaseCriteriaValues;
 }
+
+/** The case-specific reference values, as stored on the case row. */
+export type CaseCriteriaValues = {
+  vitals_key?: { respiratory_rate: number; blood_pressure: string; pulse: number };
+  correct_cuff?: string;
+  requested_study?: string;
+  scene3_phrases?: Array<{ id: number; text: string; supported: boolean }>;
+};
 
 export interface IndicatorDefinition {
   /** Stable identifier, documented in `docs/METRICS.md`. */
@@ -98,13 +112,10 @@ export function ratio(numerator: number, denominator: number): MetricValue {
   return { kind: 'ratio', value: numerator / denominator, numerator, denominator };
 }
 
-/** Reads a per-case map from config, e.g. `cuff_by_case[caseId]`. */
-export function caseParam(
-  config: StudyConfigValues,
-  key: string,
-  caseId: string,
-): unknown {
-  const map = asRecord(config[key]);
-  if (!map) return undefined;
-  return map[caseId];
+/** Reads a field of the case's criteria, e.g. `correct_cuff`. */
+export function caseParam<K extends keyof CaseCriteriaValues>(
+  criteria: CaseCriteriaValues,
+  key: K,
+): CaseCriteriaValues[K] {
+  return criteria[key];
 }

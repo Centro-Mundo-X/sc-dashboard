@@ -1,4 +1,4 @@
-import { sessions } from '@sc/db';
+import { cases, sessions } from '@sc/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { getDb } from '#lib/server/db.ts';
 
@@ -18,6 +18,7 @@ export function load({ url }: { url: URL }) {
       participantCode: sessions.participantCode,
       phase: sessions.phase,
       caseId: sessions.caseId,
+      caseLabel: cases.label,
       status: sessions.status,
       startedAt: sessions.startedAt,
       durationMs: sessions.durationMs,
@@ -25,6 +26,7 @@ export function load({ url }: { url: URL }) {
       invalidEventCount: sessions.invalidEventCount,
     })
     .from(sessions)
+    .leftJoin(cases, eq(sessions.caseId, cases.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(sessions.startedAt))
     .all();

@@ -50,6 +50,9 @@ importers:
       '@sc/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@sc/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(@types/better-sqlite3@7.6.13)(better-sqlite3@13.0.3)

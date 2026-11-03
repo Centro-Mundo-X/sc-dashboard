@@ -32,7 +32,7 @@ export const breathing: IndicatorDefinition = {
   procedure: 'breathing',
   scene: 'vital_signs',
   names: { m1: 'observation_completed', m2: 'matches_key', m3: 'time_to_record_ms' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ events, config, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const minGaze = asNumber(config['min_gaze_ms']);
@@ -53,7 +53,7 @@ export const breathing: IndicatorDefinition = {
       out.m1 = { kind: 'boolean', value: gazeCounts || monitorCounts };
     }
 
-    const expected = caseParam(config, 'vitals_key_by_case', caseId);
+    const expected = caseParam(caseCriteria, 'vitals_key');
     const expectedRate =
       typeof expected === 'object' && expected !== null
         ? asNumber((expected as Record<string, unknown>)['respiratory_rate'])
@@ -61,7 +61,7 @@ export const breathing: IndicatorDefinition = {
     const recordedRate = asNumber(recorded?.value);
 
     if (expectedRate === undefined) {
-      out.m2 = notEvaluable(`no respiratory key for case ${caseId}`);
+      out.m2 = notEvaluable('case has no vitals_key');
     } else if (recordedRate === undefined) {
       out.m2 = notEvaluable('no respiratory rate recorded');
     } else {
@@ -81,7 +81,7 @@ export const bpPreparation: IndicatorDefinition = {
   procedure: 'blood_pressure',
   scene: 'vital_signs',
   names: { m1: 'checks_completed_ratio', m2: 'cuff_matches' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ events, config, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2', MetricValue>> = {};
 
     const required = asStringArray(config['bp_required_checks']);
@@ -95,10 +95,10 @@ export const bpPreparation: IndicatorDefinition = {
     );
     out.m1 = required && required.length > 0 ? ratio(checksDone.length, required.length) : notEvaluable('bp_required_checks not configured');
 
-    const expectedCuff = caseParam(config, 'cuff_by_case', caseId);
+    const expectedCuff = caseParam(caseCriteria, 'correct_cuff');
     const chosen = valueAsString(cuffSelected);
     if (typeof expectedCuff !== 'string') {
-      out.m2 = notEvaluable(`no cuff key for case ${caseId}`);
+      out.m2 = notEvaluable('case has no correct_cuff');
     } else if (chosen === undefined) {
       out.m2 = notEvaluable('no cuff selected');
     } else {
@@ -177,10 +177,10 @@ export const vitalsIntegration: IndicatorDefinition = {
   procedure: 'vitals_integration',
   scene: 'vital_signs',
   names: { m1: 'correct_vitals_of_three', m2: 'omitted_fields', m3: 'chart_discrepancies' },
-  evaluate: ({ sessionEvents, config, caseId }) => {
+  evaluate: ({ sessionEvents, config, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
-    const expected = caseParam(config, 'vitals_key_by_case', caseId) as Record<string, unknown> | undefined;
+    const expected = caseParam(caseCriteria, 'vitals_key') as Record<string, unknown> | undefined;
     // The three values are recorded inside their own procedures, so this
     // indicator reads the whole session rather than its own slice.
     const recorded = sessionEvents.filter((e) => e.action === 'value_recorded' && e.object?.startsWith('field_'));
@@ -191,8 +191,8 @@ export const vitalsIntegration: IndicatorDefinition = {
     const pulseValue = asNumber(byField.get('field_pulse')?.value);
 
     if (!expected) {
-      out.m1 = notEvaluable(`no vitals key for case ${caseId}`);
-      out.m3 = notEvaluable(`no vitals key for case ${caseId}`);
+      out.m1 = notEvaluable('case has no vitals_key');
+      out.m3 = notEvaluable('case has no vitals_key');
     } else {
       let correct = 0;
       if (rr !== undefined && rr === asNumber(expected['respiratory_rate'])) correct++;

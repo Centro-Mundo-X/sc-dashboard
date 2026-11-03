@@ -9,6 +9,7 @@ import {
   type IndicatorResult,
   type MetricSlot,
   type MetricValue,
+  type CaseCriteriaValues,
   type StudyConfigValues,
 } from './types.ts';
 
@@ -33,7 +34,13 @@ export const INDICATORS: readonly IndicatorDefinition[] = [
 export interface EvaluateOptions {
   /** Only the header's case and the events are read; `close` is not required. */
   session: { header: Pick<Session['header'], 'case_id'>; events: SessionEvent[] };
+  /** Params that apply to every case. */
   config: StudyConfigValues;
+  /**
+   * Expected values for the session's case. When the case is unknown or its
+   * criteria are incomplete, affected metrics report `not_evaluable`.
+   */
+  caseCriteria: CaseCriteriaValues;
 }
 
 export interface EvaluationResult {
@@ -52,7 +59,7 @@ const SLOTS: readonly MetricSlot[] = ['m1', 'm2', 'm3'];
  * output, which is what makes metric results reproducible when a criterion
  * changes later.
  */
-export function evaluateSession({ session, config }: EvaluateOptions): EvaluationResult {
+export function evaluateSession({ session, config, caseCriteria }: EvaluateOptions): EvaluationResult {
   const caseId = session.header.case_id;
   const sessionEvents = session.events as SessionEvent[];
   const results: IndicatorResult[] = [];
@@ -60,7 +67,7 @@ export function evaluateSession({ session, config }: EvaluateOptions): Evaluatio
 
   for (const definition of INDICATORS) {
     const events = eventsForProcedure(sessionEvents, definition.procedure);
-    const produced = definition.evaluate({ events, sessionEvents, config, caseId });
+    const produced = definition.evaluate({ events, sessionEvents, config, caseId, caseCriteria });
     const metrics: ComputedMetric[] = [];
 
     for (const slot of SLOTS) {

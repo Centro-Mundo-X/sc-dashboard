@@ -1,10 +1,14 @@
 /**
- * Provisional values for `study_config`.
+ * Seed data for a fresh database.
  *
- * These exist so the dashboard can show real output before the psychologist
- * reviews the criteria. They ship with `approved: false` and the UI must say so.
- * Nothing here is a clinical decision: `docs/METRICS.md` lists where each one
- * comes from in the source material.
+ * Two things live here, and they are different in nature:
+ *
+ * - `STUDY_CONFIG_SEED`: params that apply to every session, whatever the case.
+ * - `CASE_SEED`: the case catalog, with the expected values each case compares
+ *   against.
+ *
+ * Both ship unapproved. `study_config.approved` and `cases.approved` are what
+ * stop a provisional value from being read as a clinical criterion.
  */
 
 export interface StudyConfigSeed {
@@ -13,6 +17,14 @@ export interface StudyConfigSeed {
   description: string;
 }
 
+export interface CaseSeed {
+  id: string;
+  label: string;
+  /** Missing pieces are left out on purpose and surface in the dashboard. */
+  criteria: Record<string, unknown> | null;
+}
+
+/** Params that apply to every session, regardless of case. */
 export const STUDY_CONFIG_SEED: readonly StudyConfigSeed[] = [
   {
     key: 'min_gaze_ms',
@@ -30,37 +42,41 @@ export const STUDY_CONFIG_SEED: readonly StudyConfigSeed[] = [
     description: 'Vías válidas para observar la respiración.',
   },
   {
-    key: 'cuff_by_case',
-    value: { 'case-01-chest-pain': 'adult', 'case-02-hypertension': 'large_adult' },
-    description: 'Brazalete correcto por caso.',
-  },
-  {
     key: 'bp_required_checks',
-    value: ['rest_five_minutes', 'select_correct_cuff', 'place_on_bare_arm', 'arm_at_heart_level'],
+    value: ['drawer', 'cuff'],
     description: 'Comprobaciones exigidas antes de medir la presión arterial.',
   },
+];
+
+/**
+ * The case catalog.
+ *
+ * `case-02-hypertension` ships without `scene3_phrases` on purpose: its clinical
+ * values are not defined yet, and the dashboard reports the gap instead of
+ * producing `not_evaluable` metrics silently for a whole scene.
+ */
+export const CASE_SEED: readonly CaseSeed[] = [
   {
-    key: 'requested_study_by_case',
-    value: { 'case-01-chest-pain': 'chest_pa', 'case-02-hypertension': 'chest_lateral' },
-    description: 'Estudio de rayos X solicitado por caso.',
-  },
-  {
-    key: 'scene3_phrases',
-    value: {
-      'case-01-chest-pain': [
+    id: 'case-01-chest-pain',
+    label: 'Dolor torácico',
+    criteria: {
+      vitals_key: { respiratory_rate: 18, blood_pressure: '120/80', pulse: 76 },
+      correct_cuff: 'adult',
+      requested_study: 'chest_pa',
+      scene3_phrases: [
         { id: 1, text: 'La imagen no muestra alteraciones agudas.', supported: true },
         { id: 2, text: 'El estudio confirma el diagnóstico definitivo.', supported: false },
         { id: 3, text: 'El informe es preliminar.', supported: true },
       ],
     },
-    description: 'Frases de la escena 3 y cuáles están respaldadas por el informe.',
   },
   {
-    key: 'vitals_key_by_case',
-    value: {
-      'case-01-chest-pain': { respiratory_rate: 18, blood_pressure: '120/80', pulse: 76 },
-      'case-02-hypertension': { respiratory_rate: 20, blood_pressure: '150/95', pulse: 88 },
+    id: 'case-02-hypertension',
+    label: 'Hipertensión',
+    criteria: {
+      vitals_key: { respiratory_rate: 20, blood_pressure: '150/95', pulse: 88 },
+      correct_cuff: 'large_adult',
+      requested_study: 'chest_lateral',
     },
-    description: 'Respiración, presión y pulso esperados por caso.',
   },
 ];

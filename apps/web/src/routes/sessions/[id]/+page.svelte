@@ -153,7 +153,9 @@
   </div>
   <div>
     <dt class="label">{labels.sessions.case}</dt>
-    <dd class="mt-0.5 font-mono text-[0.75rem]">{data.session.caseId}</dd>
+    <dd class="mt-0.5">
+      {data.caseLabel ?? data.session.caseId}
+    </dd>
   </div>
   <div>
     <dt class="label">{labels.sessions.started}</dt>
@@ -166,6 +168,18 @@
     </dd>
   </div>
 </dl>
+
+{#if data.caseMissing.length > 0}
+  <aside class="mb-4 border border-(--hairline) border-l-2 border-l-signal-danger bg-(--panel) px-3 py-2">
+    <p class="text-[0.8125rem] font-semibold text-signal-danger">
+      El caso {data.caseLabel ?? data.session.caseId} está incompleto
+    </p>
+    <p class="text-soft mt-0.5 text-[0.75rem]">
+      Faltan criterios de comparación. Las métricas que los necesitan no se pueden evaluar.
+    </p>
+    <p class="text-faint mt-1 font-mono text-[0.6875rem]">{data.caseMissing.join(' · ')}</p>
+  </aside>
+{/if}
 
 {#if !data.configApproved}
   <aside class="mb-4 border border-(--hairline) border-l-2 border-l-signal-warn bg-(--panel) px-3 py-2">

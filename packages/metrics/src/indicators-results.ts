@@ -2,6 +2,7 @@ import type { SessionEvent } from '@sc/shared';
 import {
   asRecord,
   caseParam,
+  type CaseCriteriaValues,
   firstByAction,
   isCompleted,
   notEvaluable,
@@ -18,9 +19,9 @@ function elapsedMs(from: string | undefined, to: string | undefined): number | u
   return Math.max(0, end - start);
 }
 
-/** Phrases declared for a case: `scene3_phrases[caseId]` is an array of {id, supported}. */
-function phrasesForCase(config: Record<string, unknown>, caseId: string): unknown[] | undefined {
-  const value = caseParam(config, 'scene3_phrases', caseId);
+/** Phrases the participant must classify, as declared on the case. */
+function phrasesForCase(criteria: CaseCriteriaValues): unknown[] | undefined {
+  const value = caseParam(criteria, 'scene3_phrases');
   return Array.isArray(value) ? value : undefined;
 }
 
@@ -61,15 +62,15 @@ export const textValidation: IndicatorDefinition = {
   procedure: 'text_validation',
   scene: 'results_delivery',
   names: { m1: 'phrases_classified_ratio', m2: 'unsupported_accepted', m3: 'corrections_before_communicating' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ events, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const classified = events.filter((e) => e.action === 'phrase_classified');
-    const expected = phrasesForCase(config, caseId);
+    const expected = phrasesForCase(caseCriteria);
 
     if (!expected) {
-      out.m1 = notEvaluable(`no scene3 phrases for case ${caseId}`);
-      out.m2 = notEvaluable(`no scene3 phrases for case ${caseId}`);
+      out.m1 = notEvaluable('case has no scene3_phrases');
+      out.m2 = notEvaluable('case has no scene3_phrases');
     } else {
       out.m1 = ratio(classified.length, expected.length);
 
@@ -134,15 +135,15 @@ export const explanation: IndicatorDefinition = {
   procedure: 'explanation',
   scene: 'results_delivery',
   names: { m1: 'messages_concordant_ratio', m2: 'unsupported_claims', m3: 'relevant_info_omitted' },
-  evaluate: ({ events, config, caseId }) => {
+  evaluate: ({ events, caseCriteria }) => {
     const out: Partial<Record<'m1' | 'm2' | 'm3', MetricValue>> = {};
 
     const responses = events.filter((e) => e.action === 'verbal_response');
-    const expected = phrasesForCase(config, caseId);
+    const expected = phrasesForCase(caseCriteria);
 
     if (!expected) {
-      out.m1 = notEvaluable(`no scene3 phrases for case ${caseId}`);
-      out.m2 = notEvaluable(`no scene3 phrases for case ${caseId}`);
+      out.m1 = notEvaluable('case has no scene3_phrases');
+      out.m2 = notEvaluable('case has no scene3_phrases');
     } else {
       const supportedIds = new Set(
         expected
