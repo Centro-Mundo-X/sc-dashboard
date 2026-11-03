@@ -1,11 +1,18 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import { labels, indicatorLabel, metricLabel } from '#lib/labels';
+  import { labels, indicatorLabel, metricLabel, INDICATOR_SCENE } from '#lib/labels';
   import type { PageProps } from './$types';
 
   let { data }: PageProps = $props();
 
   type MetricRow = (typeof data.metrics)[number];
+
+  /** Failed checks are the only thing that gets colour. */
+  function failed(metric: MetricRow): boolean {
+    if (metric.valueType === 'boolean') return metric.valueBool === false;
+    if (metric.valueType === 'ratio') return (metric.valueNumber ?? 0) < 1;
+    return false;
+  }
 
   let reason = $state('');
   let saving = $state(false);
@@ -15,18 +22,52 @@
     reason = data.session.incompleteReason ?? '';
   });
 
-  const grouped = $derived.by(() => {
+  /** Indicators grouped by indicator id, in metric row order. */
+  const byIndicator = $derived.by(() => {
     const map = new Map<string, MetricRow[]>();
     for (const metric of data.metrics) {
       const bucket = map.get(metric.indicator);
       if (bucket) bucket.push(metric);
       else map.set(metric.indicator, [metric]);
     }
-    return [...map.entries()];
+    return map;
+  });
+
+  const SCENE_ORDER = ['vital_signs', 'x_ray', 'results_delivery', 'outside'] as const;
+
+  /**
+   * Metrics grouped by scene, then by indicator. The scene is the first
+   * division because that is the order the participant lived it.
+   */
+  const byScene = $derived.by(() => {
+    const scenes = new Map<string, Array<[string, MetricRow[]]>>();
+
+    for (const [indicator, metrics] of byIndicator) {
+      const scene = INDICATOR_SCENE[indicator] ?? 'outside';
+      const list = scenes.get(scene) ?? [];
+      list.push([indicator, metrics]);
+      scenes.set(scene, list);
+    }
+
+    const ordered = SCENE_ORDER.filter((s) => scenes.has(s)).map(
+      (s) => [s, scenes.get(s)!] as const,
+    );
+
+    return ordered.map(([scene, indicators]) => {
+      const all = indicators.flatMap(([, ms]) => ms);
+      return {
+        scene,
+        indicators,
+        /** Indicators in this scene where every metric has a real value. */
+        evaluated: indicators.filter(([, ms]) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
+        total: indicators.length,
+        failedMetrics: all.filter(failed).length,
+      };
+    });
   });
 
   const evaluated = $derived(
-    grouped.filter(([, ms]) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
+    [...byIndicator.values()].filter((ms) => ms.every((m) => m.valueType !== 'not_evaluable')).length,
   );
 
   function display(metric: MetricRow): string {
@@ -38,13 +79,6 @@
       return metric.metric.endsWith('_ms') ? `${value} ${labels.value.ms}` : String(value);
     }
     return metric.valueText ?? '—';
-  }
-
-  /** Failed checks are the only thing that gets colour. */
-  function failed(metric: MetricRow): boolean {
-    if (metric.valueType === 'boolean') return metric.valueBool === false;
-    if (metric.valueType === 'ratio') return (metric.valueNumber ?? 0) < 1;
-    return false;
   }
 
   function formatDate(iso: string): string {
@@ -102,7 +136,7 @@
   <div>
     <dt class="label">Indicadores evaluados</dt>
     <dd class="mt-0.5">
-      <span class="font-mono">{evaluated}/{grouped.length}</span>
+      <span class="font-mono">{evaluated}/{byIndicator.size}</span>
     </dd>
   </div>
 </dl>
@@ -139,26 +173,48 @@
 {#if data.metrics.length === 0}
   <p class="text-faint py-8 text-center text-[0.8125rem]">{labels.session.noMetrics}</p>
 {:else}
-  <div class="mb-6 border-t border-(--hairline)">
-    {#each grouped as [indicator, metrics] (indicator)}
-      <div class="grid gap-x-6 gap-y-1 border-b border-(--rule) py-2 sm:grid-cols-[minmax(0,190px)_minmax(0,1fr)]">
-        <h3 class="text-[0.75rem] font-semibold">{indicatorLabel(indicator)}</h3>
-        <dl class="grid min-w-0 gap-0.5">
-          {#each metrics as metric (metric.id)}
-            <div class="flex min-w-0 items-baseline justify-between gap-4">
-              <dt class="text-soft min-w-0 truncate text-[0.75rem]">{metricLabel(metric.metric)}</dt>
-              <dd
-                class="text-right font-mono text-[0.75rem] font-medium {failed(metric)
-                  ? 'text-signal-danger'
-                  : 'text-(--text)'}"
-                title={metric.notEvaluableReason ?? ''}
-              >
-                {display(metric)}
-              </dd>
-            </div>
-          {/each}
-        </dl>
-      </div>
+  <div class="mb-6 grid gap-5">
+    {#each byScene as scene (scene.scene)}
+      <section>
+        <div class="mb-1 flex items-baseline gap-2 border-b border-(--hairline) pb-1">
+          <h3 class="text-[0.8125rem] font-semibold">{labels.scene[scene.scene]}</h3>
+          <span class="text-faint text-[0.75rem]">{labels.sceneDescription[scene.scene]}</span>
+          <span class="ml-auto font-mono text-[0.6875rem]">
+            <span class={scene.evaluated === scene.total ? 'text-signal-ok' : 'text-(--text)'}>
+              {scene.evaluated}/{scene.total}
+            </span>
+            {#if scene.failedMetrics > 0}
+              <span class="text-signal-danger">
+                · {scene.failedMetrics}
+                {scene.failedMetrics === 1 ? 'métrica con fallo' : 'métricas con fallo'}
+              </span>
+            {/if}
+          </span>
+        </div>
+
+        {#each scene.indicators as [indicator, metrics] (indicator)}
+          <div
+            class="grid gap-x-6 gap-y-1 border-b border-(--rule) py-1.5 sm:grid-cols-[minmax(0,190px)_minmax(0,1fr)]"
+          >
+            <h4 class="text-soft text-[0.75rem] font-medium">{indicatorLabel(indicator)}</h4>
+            <dl class="grid min-w-0 gap-0.5">
+              {#each metrics as metric (metric.id)}
+                <div class="flex min-w-0 items-baseline justify-between gap-4">
+                  <dt class="text-soft min-w-0 truncate text-[0.75rem]">{metricLabel(metric.metric)}</dt>
+                  <dd
+                    class="text-right font-mono text-[0.75rem] font-medium {failed(metric)
+                      ? 'text-signal-danger'
+                      : 'text-(--text)'}"
+                    title={metric.notEvaluableReason ?? ''}
+                  >
+                    {display(metric)}
+                  </dd>
+                </div>
+              {/each}
+            </dl>
+          </div>
+        {/each}
+      </section>
     {/each}
   </div>
 {/if}

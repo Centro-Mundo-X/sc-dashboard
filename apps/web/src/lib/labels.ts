@@ -65,6 +65,13 @@ export const labels = {
     outside: 'Fuera de escena',
   },
 
+  sceneDescription: {
+    vital_signs: 'Respiración, presión arterial y pulso',
+    x_ray: 'Verificación, preparación y captura',
+    results_delivery: 'Correspondencia, validación y explicación',
+    outside: 'Eventos de sesión',
+  },
+
   indicator: {
     breathing: 'Respiración',
     bp_preparation: 'Preparación de la presión',
@@ -127,6 +134,27 @@ export const labels = {
     ms: 'ms',
   },
 } as const;
+
+/**
+ * Which scene each indicator belongs to. Mirrors `INDICATORS` in
+ * `packages/metrics/src/engine.ts`; used to group the dashboard by scene.
+ */
+export const INDICATOR_SCENE: Record<string, keyof typeof labels.scene> = {
+  breathing: 'vital_signs',
+  bp_preparation: 'vital_signs',
+  bp_measurement: 'vital_signs',
+  pulse: 'vital_signs',
+  vitals_integration: 'vital_signs',
+  identity_verification: 'x_ray',
+  patient_preparation: 'x_ray',
+  image_capture: 'x_ray',
+  image_review: 'x_ray',
+  correspondence: 'results_delivery',
+  text_validation: 'results_delivery',
+  inconclusive: 'results_delivery',
+  explanation: 'results_delivery',
+  comprehension: 'results_delivery',
+};
 
 export function indicatorLabel(id: string): string {
   return (labels.indicator as Record<string, string>)[id] ?? id;
