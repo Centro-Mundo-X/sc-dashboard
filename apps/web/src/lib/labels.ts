@@ -59,11 +59,10 @@ export const labels = {
   },
 
   scene: {
-    lobby: 'Lobby',
     vital_signs: 'Signos vitales',
     x_ray: 'Rayos X',
     results_delivery: 'Entrega de resultados',
-    report: 'Reporte',
+    outside: 'Fuera de escena',
   },
 
   indicator: {

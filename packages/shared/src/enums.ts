@@ -1,20 +1,15 @@
 /** Contract enumerations. Values travel over the wire, so they are English. */
 
-export const SCENES = [
-  'lobby',
-  'vital_signs',
-  'x_ray',
-  'results_delivery',
-  'report',
-] as const;
+/**
+ * The three scenes of the experience, per the VR specification. The lobby and
+ * the final report are UI, not scenes; events that happen there use `outside`.
+ */
+export const SCENES = ['vital_signs', 'x_ray', 'results_delivery'] as const;
 export type Scene = (typeof SCENES)[number];
 
-/** Scenes that must be present for a session to count as complete. */
-export const CLINICAL_SCENES = [
-  'vital_signs',
-  'x_ray',
-  'results_delivery',
-] as const satisfies readonly Scene[];
+/** Every valid value of `scene`, including events outside a clinical scene. */
+export const SCENE_VALUES = [...SCENES, 'outside'] as const;
+export type SceneValue = (typeof SCENE_VALUES)[number];
 
 /** Clinical procedures. Group events for metric calculation. */
 export const PROCEDURES = [

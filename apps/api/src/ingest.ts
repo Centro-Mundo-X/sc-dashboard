@@ -1,7 +1,7 @@
 import type { Db } from '@sc/db';
 import { events, invalidEvents, metricResults, participants, sessions } from '@sc/db';
 import { evaluateSession } from '@sc/metrics';
-import { CLINICAL_SCENES, parseSessionJsonl, type Session } from '@sc/shared';
+import { parseSessionJsonl, SCENES, type Session } from '@sc/shared';
 import { eq } from 'drizzle-orm';
 
 export interface IngestResult {
@@ -15,7 +15,7 @@ export interface IngestResult {
 
 function sessionStatus(session: Session): 'complete' | 'incomplete' {
   const completed = new Set(session.close?.scenes_completed ?? []);
-  return CLINICAL_SCENES.every((scene) => completed.has(scene)) ? 'complete' : 'incomplete';
+  return SCENES.every((scene) => completed.has(scene)) ? 'complete' : 'incomplete';
 }
 
 /**

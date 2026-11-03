@@ -12,7 +12,7 @@ import {
   OUTCOMES,
   PHASES,
   PROCEDURES,
-  SCENES,
+  SCENE_VALUES,
 } from './enums.ts';
 
 /** Anonymous participant code: `P` followed by two digits. */
@@ -75,7 +75,7 @@ export const EventSchema = v.object({
   type: v.literal('event'),
   event_id: v.pipe(v.number(), v.integer(), v.minValue(1)),
   occurred_at: Iso8601UtcSchema,
-  scene: v.picklist(SCENES),
+  scene: v.picklist(SCENE_VALUES),
   procedure: v.picklist(PROCEDURES),
   action: v.pipe(
     v.string(),
@@ -93,7 +93,7 @@ export const SessionCloseSchema = v.object({
   type: v.literal('close'),
   finished_at: Iso8601UtcSchema,
   duration_ms: v.pipe(v.number(), v.integer(), v.minValue(0)),
-  scenes_completed: v.array(v.picklist(SCENES)),
+  scenes_completed: v.array(v.picklist(SCENE_VALUES)),
   total_events: v.pipe(v.number(), v.integer(), v.minValue(0)),
   incomplete_reason: v.optional(v.picklist(INCOMPLETE_REASONS)),
 });

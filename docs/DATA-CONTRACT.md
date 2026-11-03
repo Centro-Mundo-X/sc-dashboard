@@ -106,13 +106,17 @@ si más adelante hay pretest y postest tampoco hace falta migrar.
 
 ### 4.2 `scene`
 
+La experiencia tiene tres escenas. El lobby y el reporte final son pantallas, no escenas.
+
 | Valor | Corresponde a |
 |---|---|
-| `lobby` | Menú inicial, selección de participante |
 | `vital_signs` | Escena 1 — toma de signos vitales |
 | `x_ray` | Escena 2 — toma de rayos X |
 | `results_delivery` | Escena 3 — entrega y validación |
-| `report` | Reporte final |
+| `outside` | Fuera de una escena: lobby, selección de caso, reporte final |
+
+Los eventos de inicio y cierre de sesión usan `outside`. Solo las tres escenas cuentan para
+`scenes_completed`.
 
 ### 4.3 `procedure`
 
@@ -147,7 +151,7 @@ RV; el equipo Unity debe proponer las que falten antes de implementarlas.
 | `vital_signs` | `scene_started`, `gaze_chest`, `monitor_checked`, `value_recorded`, `drawer_opened`, `cuff_selected`, `cuff_placed`, `sphygmomanometer_activated`, `reading_displayed`, `wrist_touched`, `value_corrected`, `chart_finalized`, `scene_ended` |
 | `x_ray` | `scene_started`, `console_opened`, `wristband_read`, `identification_dialogue`, `study_selected`, `phrase_communicated`, `patient_confirmed`, `capture_activated`, `image_displayed`, `image_reviewed`, `scene_ended` |
 | `results_delivery` | `scene_started`, `panel_opened`, `identifiers_compared`, `report_corrected`, `phrase_classified`, `report_status_recognized`, `verbal_response`, `comprehension_asked`, `consultation_closed` |
-| `lobby` | `session_started`, `case_assigned`, `session_finished` |
+| `outside` | `session_started`, `case_assigned`, `session_finished` |
 
 ### 4.5 `outcome`
 
