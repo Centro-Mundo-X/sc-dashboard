@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import session from '@fastify/session';
+import { sql } from 'drizzle-orm';
 import { loadStudyConfig, openDatabase, runMigrations, seedCases, seedStudyConfig, type Db } from '@sc/db';
 import { hashToken, requireDeviceToken, requireUser } from './auth.ts';
 import { ingestSession } from '../services/ingest.ts';
@@ -55,6 +56,13 @@ export async function buildServer(options: ServerOptions): Promise<BuiltServer> 
     { parseAs: 'string' },
     (_request, body, done) => done(null, body),
   );
+
+  // Liveness: the process is up and the database answers. No auth, nothing
+  // about the data it holds.
+  app.get('/health', async () => {
+    db.get(sql`select 1`);
+    return { status: 'ok' };
+  });
 
   const config = loadStudyConfig(db);
   const deviceGuard = requireDeviceToken(hashToken(options.deviceToken));

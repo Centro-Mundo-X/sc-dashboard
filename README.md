@@ -45,6 +45,22 @@ docker compose exec app node --experimental-strip-types apps/api/src/cli/create-
 
 Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
 
+### Imagen publicada
+
+`.github/workflows/image.yml` construye la imagen y la publica en GHCR cuando se
+empuja un tag `v*`, o a mano desde Actions. Queda en
+`ghcr.io/<usuario>/<repo>:<tag>`.
+
+La imagen corre con `NODE_ENV=production`, que marca la cookie de sesión como
+`Secure`. **El dashboard solo inicia sesión por HTTPS**: hay que servirlo detrás de
+un proxy con TLS.
+
+El `pod.yaml` es para Podman. Construye la imagen localmente y apunta a ella:
+
+```bash
+podman build -t localhost/simulacion-clinica .
+```
+
 ## Comandos
 
 | Comando | Qué hace |
