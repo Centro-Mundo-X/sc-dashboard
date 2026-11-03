@@ -8,9 +8,29 @@ spec:
       # Demo image: it seeds a sample user and session on first start.
       # Change the tag to move to a release image.
       image: ghcr.io/centro-mundo-x/sc-dashboard:demo
-      envFrom:
-        - configMapRef:
-            name: env
+      env:
+        - name: DATABASE_PATH
+          value: "/app/data/data.sqlite"
+        - name: PORT
+          value: "3000"
+
+        # Bearer token the headset sends when ingesting. Generate with:
+        #   openssl rand -hex 24
+        - name: DEVICE_TOKEN
+          value: "change-device-token"
+
+        # Signs the dashboard session cookie. At least 32 characters. Generate with:
+        #   openssl rand -hex 32
+        - name: SESSION_SECRET
+          value: "change-secret-of-at-least-32-characters"
+
+        # Fills the database with the sample user and session on first start.
+        - name: SEED_DEMO_DATA
+          value: "true"
+        - name: SEED_USER
+          value: "demo"
+        - name: SEED_PASSWORD
+          value: "demo-access-2024"
       ports:
         - containerPort: 3000
           hostPort: 3000

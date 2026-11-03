@@ -63,15 +63,12 @@ Con `SEED_DEMO_DATA=true` el contenedor prepara la base antes de arrancar: crea 
 usuario del dashboard y carga la sesión de ejemplo. Es idempotente, así que
 reiniciar no duplica nada.
 
-`docker-compose.yml` y `pod.yaml` ya vienen con ese valor. En el pod, agregalo al
-`ConfigMap env`:
+`docker-compose.yml` y `pod.yaml` ya vienen con ese valor. En el pod, las
+variables están escritas en el propio `pod.yaml`, en la lista `env`: no hace
+falta un `ConfigMap` aparte.
 
-```yaml
-data:
-  SEED_DEMO_DATA: "true"
-  SEED_USER: "demo"
-  SEED_PASSWORD: "demo-access-2024"
-```
+Antes de levantarlo, cambía en `pod.yaml` el `DEVICE_TOKEN` y el `SESSION_SECRET`
+por valores propios. Los que trae son marcadores.
 
 Para una base vacía, `SEED_DEMO_DATA: "false"`. El usuario se crea aparte:
 
