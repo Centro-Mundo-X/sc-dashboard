@@ -31,7 +31,8 @@ export const INDICATORS: readonly IndicatorDefinition[] = [
 ];
 
 export interface EvaluateOptions {
-  session: Pick<Session, 'events'> & { header: { case_id: string } };
+  /** Only the header's case and the events are read; `close` is not required. */
+  session: { header: Pick<Session['header'], 'case_id'>; events: SessionEvent[] };
   config: StudyConfigValues;
 }
 

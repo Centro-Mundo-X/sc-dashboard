@@ -72,7 +72,9 @@ export const events = sqliteTable(
     procedure: text('procedure').notNull(),
     action: text('action').notNull(),
     object: text('object'),
-    value: text('value'),
+    // JSON keeps the original type: a recorded pulse of 76 stays a number,
+    // not the string "76". Typed metrics depend on it.
+    value: text('value', { mode: 'json' }),
     outcome: text('outcome').notNull(),
     context: text('context', { mode: 'json' }),
   },

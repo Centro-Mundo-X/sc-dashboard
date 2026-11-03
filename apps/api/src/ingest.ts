@@ -99,7 +99,7 @@ export function ingestSession(db: Db, text: string, config: Record<string, unkno
             procedure: event.procedure,
             action: event.action,
             object: event.object ?? null,
-            value: event.value === null || event.value === undefined ? null : String(event.value),
+            value: event.value ?? null,
             outcome: event.outcome,
             context: event.context ?? null,
           })),

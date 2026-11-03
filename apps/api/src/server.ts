@@ -6,6 +6,7 @@ import { loadStudyConfig, openDatabase, seedStudyConfig, type Db } from '@sc/db'
 import { hashToken, requireDeviceToken, requireUser } from './auth.ts';
 import { ingestSession } from './ingest.ts';
 import { registerSessionRoutes } from './routes-sessions.ts';
+import { registerAuthRoutes } from './routes-auth.ts';
 
 export interface ServerOptions {
   dbPath: string;
@@ -109,6 +110,7 @@ export async function buildServer(options: ServerOptions): Promise<BuiltServer> 
     return reply.code(200).send({ results });
   });
 
+  registerAuthRoutes(app, db, requireUser);
   registerSessionRoutes(app, db, requireUser);
 
   void config;

@@ -1,7 +1,8 @@
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Db } from '@sc/db';
-import { events, metricResults, sessions, studyConfig } from '@sc/db';
+import { events, loadStudyConfig, metricResults, sessions, studyConfig } from '@sc/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import { recalculateSession } from './recalculate.ts';
 
 interface SessionFilters {
   participant?: string;
@@ -106,6 +107,21 @@ export function registerSessionRoutes(
         configApproved: pending.length === 0,
         pendingConfigKeys: pending,
       };
+    },
+  );
+
+  app.post<{ Params: { id: string } }>(
+    '/api/sessions/:id/recalculate',
+    { preHandler: guard },
+    async (request, reply) => {
+      const id = Number(request.params.id);
+      if (!Number.isInteger(id)) return reply.code(400).send({ error: 'invalid id' });
+
+      const config = loadStudyConfig(db);
+      const outcome = recalculateSession(db, id, config.values, config.version, config.approved);
+      if (!outcome) return reply.code(404).send({ error: 'session not found' });
+
+      return outcome;
     },
   );
 

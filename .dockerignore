@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+.pnpm-store
+.git
+.pi
+docs/*.pdf
+data
+*.sqlite*
+apps/web/.svelte-kit
+apps/web/build

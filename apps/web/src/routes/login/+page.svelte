@@ -1,40 +1,25 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import { labels } from '#lib/labels';
+  import type { PageProps } from './$types';
 
-  let username = $state('');
-  let password = $state('');
-  let error = $state(false);
-
-  async function submit(event: SubmitEvent) {
-    event.preventDefault();
-    error = false;
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    if (!response.ok) {
-      error = true;
-      return;
-    }
-    location.href = '/sessions';
-  }
+  let { form }: PageProps = $props();
 </script>
 
 <svelte:head><title>{labels.login.title}</title></svelte:head>
 
 <section class="login">
   <h1>{labels.login.title}</h1>
-  <form onsubmit={submit}>
+  <form method="POST" use:enhance>
     <label>
       {labels.login.username}
-      <input bind:value={username} autocomplete="username" required />
+      <input name="username" value={form?.username ?? ''} autocomplete="username" required />
     </label>
     <label>
       {labels.login.password}
-      <input type="password" bind:value={password} autocomplete="current-password" required />
+      <input type="password" name="password" autocomplete="current-password" required />
     </label>
-    {#if error}<p class="error">{labels.login.error}</p>{/if}
+    {#if form?.error}<p class="error">{labels.login.error}</p>{/if}
     <button type="submit">{labels.login.submit}</button>
   </form>
 </section>
