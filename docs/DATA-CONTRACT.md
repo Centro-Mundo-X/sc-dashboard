@@ -166,8 +166,8 @@ contra las reglas de `study_config`.
 
 ### 4.6 `context`
 
-Objeto plano, hasta 8 claves, valores `string` o `number`. Sirve para datos del evento sin
-ampliar el esquema: `{"arm": "left"}`, `{"phrase_id": 3}`.
+Objeto plano, hasta 8 claves, valores `string`, `number` o `boolean`. Sirve para datos del
+evento sin ampliar el esquema: `{"arm": "left"}`, `{"phrase_id": 3}`, `{"matches": true}`.
 
 Nunca incluir datos identificatorios: sin nombres, sin documentos, sin historias clínicas.
 

@@ -1,5 +1,7 @@
 <script lang="ts">
   import { labels } from '#lib/labels';
+
+  let { children } = $props();
 </script>
 
 <svelte:head>
@@ -12,11 +14,9 @@
     <span class="subtitle">{labels.subtitle}</span>
   </header>
   <main>
-    {@render children?.()}
+    {@render children()}
   </main>
 </div>
-
-{#snippet children()}{/snippet}
 
 <style>
   :global(:root) {
