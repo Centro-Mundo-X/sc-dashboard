@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "test": "node --test --experimental-strip-types 'src/**/*.test.ts'",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": { "@sc/shared": "workspace:*" },
+  "dependencies": {
+    "@sc/shared": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "typescript": "^5.7.3"
+    "typescript": "^7.0.2"
   }
 }

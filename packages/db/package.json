@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "test": "node --test --experimental-strip-types 'src/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
@@ -19,6 +21,6 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
     "drizzle-kit": "^0.31.1",
-    "typescript": "^5.7.3"
+    "typescript": "^7.0.2"
   }
 }

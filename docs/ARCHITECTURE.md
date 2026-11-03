@@ -34,7 +34,7 @@ observación, y el centro de urgencias no tiene red garantizada.
 | Capa | Elección |
 |---|---|
 | Runtime | Node.js 22 |
-| Lenguaje | TypeScript con `strict` |
+| Lenguaje | TypeScript 7 (compilador nativo) con `strict` |
 | API | Fastify 5 |
 | Base de datos | SQLite con WAL |
 | Driver | better-sqlite3 |
@@ -76,6 +76,12 @@ Sin WAL, el dashboard bloquea la ingesta mientras consulta.
 
 Si el estudio crece, Drizzle permite pasar a Postgres cambiando driver y dialecto. El esquema
 es portable.
+
+### TypeScript 7
+
+El backend usa el compilador nativo. El dashboard necesita además TypeScript 6, porque
+`svelte-check` todavía exige ambas versiones para usar `--tsgo`; se instalan con un alias
+(`@typescript/native`) y el script `check` pasa el flag.
 
 ### Drizzle en vez de Prisma
 
