@@ -46,12 +46,16 @@ spec:
       ports:
         - containerPort: 8080
           hostPort: 3000
+      # podman falls back to curl for httpGet probes, and this image has no
+      # curl. Node is already there, so the check runs with it instead.
       livenessProbe:
-        httpGet:
-          path: /api/health
-          port: 8080
-        initialDelaySeconds: 10
-        periodSeconds: 10
+        exec:
+          command:
+            - node
+            - -e
+            - fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+        initialDelaySeconds: 30
+        periodSeconds: 30
         failureThreshold: 5
       volumeMounts:
         - name: data
@@ -60,5 +64,5 @@ spec:
   volumes:
     - name: data
       hostPath:
-        path: /opt/simulacion-clinica/data
+        path: /opt/sc-dashboard/data
         type: DirectoryOrCreate
