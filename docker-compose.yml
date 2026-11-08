@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/centro-mundo-x/sc-dashboard:v0.1.0-demo
+    image: ghcr.io/centro-mundo-x/sc-dashboard:v0.1.0-demo-20261108
     restart: unless-stopped
     ports:
       - '3000:8080'

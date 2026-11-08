@@ -7,7 +7,7 @@ spec:
     - name: app
       # Demo image: it seeds a sample user and session on first start.
       # Change the tag to move to a release image.
-      image: ghcr.io/centro-mundo-x/sc-dashboard:v0.1.0-demo
+      image: ghcr.io/centro-mundo-x/sc-dashboard:v0.1.0-demo-20261108
       env:
         - name: DATABASE_PATH
           value: "/app/data/data.sqlite"
