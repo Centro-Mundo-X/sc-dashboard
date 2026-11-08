@@ -14,6 +14,20 @@ spec:
         - name: PORT
           value: "3000"
 
+        # The API listens here, on the loopback. The dashboard forwards to it.
+        - name: API_PORT
+          value: "3001"
+        - name: API_BASE_URL
+          value: "http://127.0.0.1:3001"
+
+        # Public URL of the dashboard, no trailing slash.
+        - name: ORIGIN
+          value: "https://sc.example.com"
+
+        # Addresses allowed to set X-Forwarded-*.
+        - name: TRUST_PROXY
+          value: "127.0.0.1,10.0.0.0/8"
+
         # Bearer token the headset sends when ingesting. Generate with:
         #   openssl rand -hex 24
         - name: DEVICE_TOKEN
@@ -36,7 +50,7 @@ spec:
           hostPort: 3000
       livenessProbe:
         httpGet:
-          path: /health
+          path: /api/health
           port: 3000
         initialDelaySeconds: 10
         periodSeconds: 10

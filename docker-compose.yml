@@ -10,7 +10,15 @@ services:
       DATABASE_PATH: /app/data/data.sqlite
       DEVICE_TOKEN: ${DEVICE_TOKEN:?set DEVICE_TOKEN}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET}
+      # Public port, served by the dashboard. The API stays on API_PORT, loopback.
       PORT: 3000
+      API_PORT: 3001
+      API_BASE_URL: http://127.0.0.1:3001
+      # Public URL of the dashboard. Required: it rejects form POSTs from any
+      # other origin.
+      ORIGIN: ${ORIGIN:?set ORIGIN, e.g. https://sc.example.com}
+      # Addresses allowed to set X-Forwarded-*.
+      TRUST_PROXY: ${TRUST_PROXY:-127.0.0.1,10.0.0.0/8}
       # Fills the database with the sample user and session on first start.
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
       SEED_USER: ${SEED_USER:-demo}
