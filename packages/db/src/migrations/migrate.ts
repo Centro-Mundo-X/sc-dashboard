@@ -30,5 +30,5 @@ export function prepareDatabase(
 if (process.argv[1]?.endsWith('migrate.ts')) {
   const path = process.env.DATABASE_PATH ?? './data/data.sqlite';
   prepareDatabase(path);
-  console.log(`Migrated and seeded ${path}`);
+  console.log(`Migrated and seeded ${path}.`);
 }

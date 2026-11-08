@@ -84,6 +84,6 @@ run('web', 'pnpm', ['--filter', '@sc/web', 'exec', 'vite', 'dev', '--port', WEB_
 });
 
 console.log('');
-console.log(`  dashboard  http://localhost:${WEB_PORT}`);
-console.log(`  api        http://127.0.0.1:${env.PORT ?? 3000}`);
+console.log(`  Dashboard  http://localhost:${WEB_PORT}`);
+console.log(`  API        http://127.0.0.1:${env.PORT ?? 3000}`);
 console.log('');

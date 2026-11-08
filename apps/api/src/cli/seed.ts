@@ -30,9 +30,9 @@ const { app, db } = await buildServer({
 
 try {
   await createUser(db, { username, password, displayName: 'Demo' });
-  console.log(`created user ${username}`);
+  console.log(`Created user ${username}.`);
 } catch {
-  console.log(`user ${username} already existed`);
+  console.log(`User ${username} already existed.`);
 }
 
 const text = readFileSync(resolve('fixtures/session-complete.jsonl'), 'utf8');
@@ -42,15 +42,15 @@ const result = ingestSession(db, text, config.values, config.version, config.app
 if (result.status === 'accepted') {
   console.log(
     result.duplicate
-      ? 'sample session was already loaded'
-      : `sample session loaded (${result.eventsReceived} events)`,
+      ? 'Sample session was already loaded.'
+      : `Sample session loaded (${result.eventsReceived} events).`,
   );
 } else {
-  console.log(`could not load the sample session: ${result.error}`);
+  console.log(`Could not load the sample session: ${result.error}`);
 }
 
 await app.close();
 
 console.log('');
-console.log(`database ready at ${dbPath}`);
-console.log(`user: ${username} / ${password}`);
+console.log(`Database ready at ${dbPath}.`);
+console.log(`User: ${username} / ${password}`);

@@ -109,7 +109,7 @@ export async function handle({
 }): Promise<Response> {
   if (event.url.pathname.startsWith('/api/')) {
     return forward(event).catch((error: unknown) => {
-      console.error('api proxy failed', error);
+      console.error('API proxy failed:', error);
       return new Response('bad gateway', { status: 502 });
     });
   }
