@@ -13,9 +13,8 @@ WEB_PORT="${PORT:-3000}"
 API_PORT="${API_PORT:-3001}"
 API_BASE_URL="${API_BASE_URL:-http://127.0.0.1:$API_PORT}"
 
-# Behind a TLS proxy. Set TRUST_PROXY=false only if the API is served over plain
-# HTTP; any other value is left untouched.
-TRUST_PROXY="${TRUST_PROXY:-true}"
+# Only the dashboard talks to the API, from the loopback. Any other value wins.
+TRUST_PROXY="${TRUST_PROXY:-127.0.0.1}"
 
 # Without these the dashboard builds its origin from the socket and answers 403.
 PROTOCOL_HEADER="${PROTOCOL_HEADER:-x-forwarded-proto}"

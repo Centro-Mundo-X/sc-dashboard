@@ -24,9 +24,10 @@ spec:
         - name: ORIGIN
           value: "https://sc.example.com"
 
-        # Addresses allowed to set X-Forwarded-*.
+        # Addresses allowed to set X-Forwarded-*. Only the dashboard talks to the
+        # API, and it does so from the loopback.
         - name: TRUST_PROXY
-          value: "127.0.0.1,10.0.0.0/8"
+          value: "127.0.0.1"
 
         # Bearer token the headset sends when ingesting. Generate with:
         #   openssl rand -hex 24

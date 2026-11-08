@@ -102,7 +102,8 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 `TRUST_PROXY` acepta una lista de direcciones y rangos CIDR, un número de saltos,
 `true`, o vacío/`false` para no confiar en nadie. Un valor inválido impide el
-arranque.
+arranque. Basta `127.0.0.1`: solo el dashboard habla con el API. Añadir rangos de
+la red interna no hace falta y amplía lo que se puede falsear.
 
 ## Comandos
 

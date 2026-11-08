@@ -27,6 +27,20 @@ before(() => {
 
 after(() => rmSync(dir, { recursive: true, force: true }));
 
+describe('openDatabase', () => {
+  it('names the path and the variable when the file cannot be opened', () => {
+    const missing = join(dir, 'no-such-dir', 'data.sqlite');
+    assert.throws(
+      () => openDatabase(missing),
+      (error: Error) => {
+        assert.match(error.message, /no-such-dir/);
+        assert.match(error.message, /DATABASE_PATH/);
+        return true;
+      },
+    );
+  });
+});
+
 describe('study config', () => {
   it('seeds provisional values marked as unapproved', () => {
     const db = migratedDb();

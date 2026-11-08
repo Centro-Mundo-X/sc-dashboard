@@ -10,7 +10,20 @@ import * as schema from './tables.ts';
  * enabled per connection.
  */
 export function openDatabase(path: string) {
-  const sqlite = new Database(path);
+  let sqlite: Database.Database;
+  try {
+    sqlite = new Database(path);
+  } catch (error) {
+    // The default error is a bare `unable to open database file`, which says
+    // nothing about which path was tried or why this process got it.
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `cannot open the database at "${path}": ${reason}. ` +
+        'DATABASE_PATH must point to a file this process can write to.',
+      { cause: error },
+    );
+  }
+
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   sqlite.pragma('busy_timeout = 5000');

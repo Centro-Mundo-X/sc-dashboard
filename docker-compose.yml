@@ -17,8 +17,9 @@ services:
       # Public URL of the dashboard. Required: it rejects form POSTs from any
       # other origin.
       ORIGIN: ${ORIGIN:?set ORIGIN, e.g. https://sc.example.com}
-      # Addresses allowed to set X-Forwarded-*.
-      TRUST_PROXY: ${TRUST_PROXY:-127.0.0.1,10.0.0.0/8}
+      # Addresses allowed to set X-Forwarded-*. Only the dashboard talks to the
+      # API, and it does so from the loopback.
+      TRUST_PROXY: ${TRUST_PROXY:-127.0.0.1}
       # Fills the database with the sample user and session on first start.
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
       SEED_USER: ${SEED_USER:-demo}
