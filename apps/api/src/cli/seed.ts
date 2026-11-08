@@ -30,9 +30,9 @@ const { app, db } = await buildServer({
 
 try {
   await createUser(db, { username, password, displayName: 'Demo' });
-  console.log(`usuario creado: ${username}`);
+  console.log(`created user ${username}`);
 } catch {
-  console.log(`usuario ${username} ya existía`);
+  console.log(`user ${username} already existed`);
 }
 
 const text = readFileSync(resolve('fixtures/session-complete.jsonl'), 'utf8');
@@ -42,15 +42,15 @@ const result = ingestSession(db, text, config.values, config.version, config.app
 if (result.status === 'accepted') {
   console.log(
     result.duplicate
-      ? 'sesión de ejemplo ya estaba cargada'
-      : `sesión de ejemplo cargada (${result.eventsReceived} eventos)`,
+      ? 'sample session was already loaded'
+      : `sample session loaded (${result.eventsReceived} events)`,
   );
 } else {
-  console.log(`no se pudo cargar la sesión: ${result.error}`);
+  console.log(`could not load the sample session: ${result.error}`);
 }
 
 await app.close();
 
 console.log('');
-console.log(`base lista en ${dbPath}`);
-console.log(`usuario: ${username} / ${password}`);
+console.log(`database ready at ${dbPath}`);
+console.log(`user: ${username} / ${password}`);
