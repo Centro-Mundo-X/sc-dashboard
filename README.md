@@ -28,7 +28,7 @@ secretos reales.
 Con `pnpm dev` en ejecución:
 
 ```bash
-curl -X POST localhost:3000/api/sessions/ingest \
+curl -X POST localhost:5173/api/sessions/ingest \
   -H "Authorization: Bearer dev" \
   -H "Content-Type: application/x-ndjson" \
   --data-binary @fixtures/session-complete.jsonl
@@ -43,7 +43,8 @@ docker compose exec app node --experimental-strip-types apps/api/src/cli/create-
   demo demo-access-2024 Demo
 ```
 
-Todo en **http://localhost:3000**: el API y el dashboard comparten proceso.
+Todo en **http://localhost:3000**: el dashboard sirve la interfaz y reenvía
+`/api` al API.
 
 ### Imagen publicada
 
@@ -76,12 +77,32 @@ Para una base vacía, `SEED_DEMO_DATA: "false"`. El usuario se crea aparte:
 podman exec <container> node --experimental-strip-types apps/api/src/cli/create-user.ts <usuario> <clave>
 ```
 
-### HTTPS es obligatorio
+### Detrás de un proxy con TLS
 
-La imagen corre con `NODE_ENV=production`, que marca la cookie de sesión como
-`Secure`. **El dashboard solo inicia sesión por HTTPS**: sobre HTTP plano el login
-responde 200 pero la cookie no se guarda, y el resto de las peticiones da 401.
-Hay que servirlo detrás de un proxy con TLS.
+El contenedor sirve las dos cosas: el dashboard escucha en `PORT` y reenvía
+`/api/*` al API, que escucha en `API_PORT` sobre el loopback. Un contenedor, un
+puerto público.
+
+| Variable | Qué hace | Por defecto |
+|---|---|---|
+| `PORT` | Puerto público, el del dashboard | `3000` |
+| `API_PORT` | Puerto del API, solo loopback | `3001` |
+| `ORIGIN` | URL pública, sin barra final. Obligatoria en producción | — |
+| `TRUST_PROXY` | Direcciones a las que se cree `X-Forwarded-*` | `false` |
+| `PROTOCOL_HEADER` / `HOST_HEADER` | Cabeceras con el esquema y el host públicos | `x-forwarded-proto` / `x-forwarded-host` |
+
+La TLS la termina el proxy externo. Debe reenviar las cabeceras:
+
+```nginx
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-Host $host;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+```
+
+`TRUST_PROXY` acepta una lista de direcciones y rangos CIDR, un número de saltos,
+`true`, o vacío/`false` para no confiar en nadie. Un valor inválido impide el
+arranque.
 
 ## Comandos
 
@@ -99,7 +120,7 @@ Hay que servirlo detrás de un proxy con TLS.
 packages/shared   ──┐
 packages/db       ──┼──► apps/api    (ingesta y consulta, puerto 3000)
 packages/metrics  ──┘
-                   └──► apps/web    (dashboard, puerto 5173)
+                   └──► apps/web    (dashboard, puerto 5173; reenvía /api)
 ```
 
 - `shared` — esquemas Valibot y tipos. El contrato, en un solo lugar.
