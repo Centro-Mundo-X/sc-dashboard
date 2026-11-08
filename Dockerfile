@@ -24,11 +24,11 @@ ENV NODE_ENV=production
 COPY --from=build /app /app
 RUN mkdir -p /app/data
 # The dashboard. The API stays internal.
+#
+# No HEALTHCHECK here: how a running instance is probed belongs to whoever runs
+# it (compose `healthcheck`, a pod's probes). Written in the image it is also
+# dropped, since the OCI format has no field for it.
 EXPOSE 8080
-
-# No `curl` in this image: the check goes through the dashboard to the API.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:' + (process.env.WEB_PORT ?? 8080) + '/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 # Runs the seed first when SEED_DEMO_DATA=true, then the server.
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

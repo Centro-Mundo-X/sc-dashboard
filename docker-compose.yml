@@ -23,6 +23,17 @@ services:
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
       SEED_USER: ${SEED_USER:-demo}
       SEED_PASSWORD: ${SEED_PASSWORD:-demo-access-2024}
+    # No `curl` in the image: the check goes through the dashboard to the API.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.WEB_PORT ?? 8080) + '/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 
 volumes:
   sc-data:
