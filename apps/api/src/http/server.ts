@@ -7,6 +7,7 @@ import { hashToken, requireDeviceToken, requireUser } from './auth.ts';
 import { ingestSession } from '../services/ingest.ts';
 import { registerSessionRoutes } from '../routes/sessions.ts';
 import { registerAuthRoutes } from '../routes/auth.ts';
+import type { TrustProxy } from '../config.ts';
 
 export interface ServerOptions {
   dbPath: string;
@@ -15,6 +16,8 @@ export interface ServerOptions {
   /** Path to the generated Drizzle migrations. */
   migrationsFolder: string;
   sessionSecure?: boolean;
+  /** Which hops may set `X-Forwarded-*`. Without it a `Secure` cookie behind a TLS proxy is dropped. */
+  trustProxy?: TrustProxy;
   logger?: boolean;
 }
 
@@ -40,7 +43,11 @@ export async function buildServer(options: ServerOptions): Promise<BuiltServer> 
   seedStudyConfig(db);
   seedCases(db);
 
-  const app = Fastify({ logger: options.logger ?? true, bodyLimit: MAX_INGEST_BYTES });
+  const app = Fastify({
+    logger: options.logger ?? true,
+    bodyLimit: MAX_INGEST_BYTES,
+    trustProxy: options.trustProxy ?? false,
+  });
 
   await app.register(cookie);
   await app.register(session, {
@@ -59,7 +66,8 @@ export async function buildServer(options: ServerOptions): Promise<BuiltServer> 
 
   // Liveness: the process is up and the database answers. No auth, nothing
   // about the data it holds.
-  app.get('/health', async () => {
+  // Under /api so the dashboard's proxy forwards it like any other API call.
+  app.get('/api/health', async () => {
     db.get(sql`select 1`);
     return { status: 'ok' };
   });
