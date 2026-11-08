@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { fail, redirect } from '@sveltejs/kit';
 
-const API_BASE = process.env.API_BASE_URL ?? 'http://127.0.0.1:3001';
+const API_BASE = process.env.API_BASE_URL ?? 'http://127.0.0.1:3000';
 
 /** Protocol the API should assume for this call. */
 const FORWARDED_PROTO = process.env.API_FORWARDED_PROTO === 'http' ? 'http' : 'https';

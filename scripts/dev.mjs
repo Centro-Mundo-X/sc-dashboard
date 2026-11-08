@@ -10,7 +10,6 @@ import { resolve } from 'node:path';
 
 const ENV_FILE = '.env.development';
 const WEB_PORT = process.env.WEB_PORT ?? '5173';
-const API_PORT = process.env.API_PORT ?? '3001';
 
 /** Minimal dotenv: KEY=value per line, `#` comments, no inline quotes. */
 function loadEnv(path) {
@@ -74,12 +73,10 @@ function shutdown() {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
-run('api', 'node', ['--experimental-strip-types', '--watch', 'apps/api/src/main.ts'], {
-  API_PORT,
-});
+run('api', 'node', ['--experimental-strip-types', '--watch', 'apps/api/src/main.ts'], {});
 
 run('web', 'pnpm', ['--filter', '@sc/web', 'exec', 'vite', 'dev', '--port', WEB_PORT], {
-  API_BASE_URL: env.API_BASE_URL ?? `http://127.0.0.1:${API_PORT}`,
+  API_BASE_URL: env.API_BASE_URL ?? `http://127.0.0.1:${env.PORT ?? 3000}`,
   API_FORWARDED_PROTO: env.API_FORWARDED_PROTO ?? 'http',
   // The dashboard reads SQLite directly. pnpm --filter runs it from apps/web,
   // so the path has to be absolute or it resolves against the wrong directory.
@@ -88,5 +85,5 @@ run('web', 'pnpm', ['--filter', '@sc/web', 'exec', 'vite', 'dev', '--port', WEB_
 
 console.log('');
 console.log(`  dashboard  http://localhost:${WEB_PORT}`);
-console.log(`  api        http://127.0.0.1:${API_PORT}`);
+console.log(`  api        http://127.0.0.1:${env.PORT ?? 3000}`);
 console.log('');

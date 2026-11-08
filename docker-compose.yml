@@ -3,17 +3,16 @@ services:
     image: ghcr.io/centro-mundo-x/sc-dashboard:v0.1.0-demo
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3000:8080'
     volumes:
       - sc-data:/app/data
     environment:
       DATABASE_PATH: /app/data/data.sqlite
       DEVICE_TOKEN: ${DEVICE_TOKEN:?set DEVICE_TOKEN}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET}
-      # Public port, served by the dashboard. The API stays on API_PORT, loopback.
+      # Same names as `pnpm dev`: PORT is the API, WEB_PORT the dashboard.
       PORT: 3000
-      API_PORT: 3001
-      API_BASE_URL: http://127.0.0.1:3001
+      WEB_PORT: 8080
       # Public URL of the dashboard. Required: it rejects form POSTs from any
       # other origin.
       ORIGIN: ${ORIGIN:?set ORIGIN, e.g. https://sc.example.com}

@@ -6,7 +6,7 @@ import { redirect, type RequestEvent } from '@sveltejs/kit';
 const PUBLIC_ROUTES = ['/login'];
 
 /** API behind this server. Everything under `/api` is forwarded there. */
-const API_BASE = process.env.API_BASE_URL ?? 'http://127.0.0.1:3001';
+const API_BASE = process.env.API_BASE_URL ?? 'http://127.0.0.1:3000';
 
 /**
  * Protocol the API should assume for the request that leaves this process.

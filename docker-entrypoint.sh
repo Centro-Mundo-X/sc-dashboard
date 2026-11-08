@@ -2,18 +2,19 @@
 #
 # Container entrypoint.
 #
-# One container, two processes: the dashboard built with adapter-node listens on
-# PORT and forwards /api to the API, which stays on the loopback.
+# The same topology as `pnpm dev`: the dashboard listens on WEB_PORT and the API
+# on PORT, behind it. Here the dashboard is the adapter-node build instead of
+# `vite dev`.
 #
 # With SEED_DEMO_DATA=true the database is prepared once before either starts.
 # Seeding is idempotent, so restarting the container is safe.
 set -e
 
-WEB_PORT="${PORT:-3000}"
-API_PORT="${API_PORT:-3001}"
-API_BASE_URL="${API_BASE_URL:-http://127.0.0.1:$API_PORT}"
+WEB_PORT="${WEB_PORT:-8080}"
+API_BASE_URL="${API_BASE_URL:-http://127.0.0.1:${PORT:-3000}}"
 
-# Only the dashboard talks to the API, from the loopback. Any other value wins.
+# Behind a TLS proxy. Set TRUST_PROXY=false only if the API is served over plain
+# HTTP; any other value is left untouched.
 TRUST_PROXY="${TRUST_PROXY:-127.0.0.1}"
 
 # Without these the dashboard builds its origin from the socket and answers 403.
@@ -26,7 +27,7 @@ if [ -z "${ORIGIN:-}" ]; then
   echo "e.g. ORIGIN=https://sc.example.com" >&2
 fi
 
-export API_PORT API_BASE_URL TRUST_PROXY PROTOCOL_HEADER HOST_HEADER ORIGIN
+export API_BASE_URL TRUST_PROXY PROTOCOL_HEADER HOST_HEADER ORIGIN
 
 if [ "$SEED_DEMO_DATA" = "true" ]; then
   node --experimental-strip-types apps/api/src/cli/seed.ts
@@ -35,8 +36,8 @@ fi
 node --experimental-strip-types apps/api/src/main.ts &
 api_pid=$!
 
-# The dashboard stays in the foreground as the main process. If it exits, the
-# container ends and takes the API with it.
+# The dashboard stays in the foreground. If it exits, the container ends and
+# takes the API with it.
 trap 'kill "$api_pid" 2>/dev/null' EXIT INT TERM
 
 PORT="$WEB_PORT" node apps/web/build/index.js &

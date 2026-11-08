@@ -11,14 +11,11 @@ spec:
       env:
         - name: DATABASE_PATH
           value: "/app/data/data.sqlite"
+        # PORT is the API, WEB_PORT the dashboard. Same names as `pnpm dev`.
         - name: PORT
           value: "3000"
-
-        # The API listens here, on the loopback. The dashboard forwards to it.
-        - name: API_PORT
-          value: "3001"
-        - name: API_BASE_URL
-          value: "http://127.0.0.1:3001"
+        - name: WEB_PORT
+          value: "8080"
 
         # Public URL of the dashboard, no trailing slash.
         - name: ORIGIN
@@ -47,12 +44,12 @@ spec:
         - name: SEED_PASSWORD
           value: "demo-access-2024"
       ports:
-        - containerPort: 3000
+        - containerPort: 8080
           hostPort: 3000
       livenessProbe:
         httpGet:
           path: /api/health
-          port: 3000
+          port: 8080
         initialDelaySeconds: 10
         periodSeconds: 10
         failureThreshold: 5
